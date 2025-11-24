@@ -1,5 +1,5 @@
-giimport 'package:flutter/foundation.dart';
-import '../../Data/Model/salary_otherexpense_model.dart';
+import 'package:flutter/foundation.dart';
+import '../../Data/Model/expense_model.dart';
 import 'sell_provider.dart';
 
 class ExpenseProvider with ChangeNotifier {

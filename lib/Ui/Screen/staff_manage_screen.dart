@@ -1,18 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:rukin_cafeteria/Ui/Widget/confirm_delete_dialog_widget.dart';
 import '../../Data/Model/staff_model.dart';
-import '../Controller/staff_provider.dart';
+import '../Provider/staff_provider.dart';
 import '../Widget/Page_Title_widget.dart';
 import '../Widget/appbar_widget.dart';
 
-class StaffManagementPage extends StatefulWidget {
-  const StaffManagementPage({super.key});
+class StaffManageScreen extends StatefulWidget {
+  const StaffManageScreen({super.key});
 
   @override
-  State<StaffManagementPage> createState() => _StaffManagementPageState();
+  State<StaffManageScreen> createState() => _StaffManageScreenState();
 }
 
-class _StaffManagementPageState extends State<StaffManagementPage> {
+class _StaffManageScreenState extends State<StaffManageScreen> {
   final TextEditingController nameController = TextEditingController();
   final TextEditingController salaryController = TextEditingController();
   String? editId;
@@ -26,14 +27,13 @@ class _StaffManagementPageState extends State<StaffManagementPage> {
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             PageTitleWidget( title: "Staff Management"),
             const SizedBox(height: 16),
             // Add/Edit Staff Name & Salary
             Card(
               elevation: 4,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12)),
               child: Padding(
                 padding: const EdgeInsets.all(16),
                 child: Column(
@@ -51,7 +51,7 @@ class _StaffManagementPageState extends State<StaffManagementPage> {
                       controller: salaryController,
                       keyboardType: TextInputType.number,
                       decoration: const InputDecoration(
-                        labelText: "Salary (৳)",
+                        labelText: "Salary (AED)",
                         prefixIcon: Icon(Icons.attach_money),
                         border: OutlineInputBorder(),
                       ),
@@ -95,10 +95,7 @@ class _StaffManagementPageState extends State<StaffManagementPage> {
                   final StaffModel s = staffProvider.staffs[index];
                   return Card(
                     elevation: 3,
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10)),
                     margin: const EdgeInsets.symmetric(vertical: 6),
-                    color: Colors.deepPurple.shade50,
                     child: ListTile(
                       contentPadding: const EdgeInsets.symmetric(
                           vertical: 8, horizontal: 16),
@@ -113,11 +110,11 @@ class _StaffManagementPageState extends State<StaffManagementPage> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              "Salary: ৳${s.salary.toStringAsFixed(2)}",
+                              "Salary: AED${s.salary.toStringAsFixed(2)}",
                               style: const TextStyle(color: Colors.deepPurple),
                             ),
                             Text(
-                              "Pending: ৳${s.pendingSalary.toStringAsFixed(2)}",
+                              "Pending: AED${s.pendingSalary.toStringAsFixed(2)}",
                               style: const TextStyle(color: Colors.redAccent),
                             ),
                           ],
@@ -138,7 +135,14 @@ class _StaffManagementPageState extends State<StaffManagementPage> {
                           // Delete
                           IconButton(
                             icon: const Icon(Icons.delete, color: Colors.red),
-                            onPressed: () => staffProvider.deleteStaff(s.id),
+                            onPressed: () => ConfirmDeleteDialogWidget.show(
+                              context,
+                                name: s.name,
+                                description: "Are you sure you want to delete this staff?",
+                                onDelete: () {
+                              staffProvider.deleteStaff(s.id);
+                            },
+                            ),
                           ),
                         ],
                       ),

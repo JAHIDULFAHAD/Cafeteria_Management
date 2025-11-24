@@ -3,7 +3,7 @@ import 'package:rukin_cafeteria/Data/Model/purchase_model.dart';
 class MonthlyPurchaseModel {
   final int month;
   final int year;
-  final List<DailyPurchaseModel> dailyPurchases;
+  final List<PurchaseModel> dailyPurchases;
 
   MonthlyPurchaseModel({
     required this.month,

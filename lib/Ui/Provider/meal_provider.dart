@@ -1,25 +1,25 @@
 import 'package:flutter/foundation.dart';
-import '../../Data/Model/mess_model.dart';
+import '../../Data/Model/meal_model.dart';
 
-class MonthlyBillProvider with ChangeNotifier {
-  final List<MonthlyBillModel> _bills = [];
+class MealProvider with ChangeNotifier {
+  final List<MealModel> _bills = [];
 
-  List<MonthlyBillModel> get bills => _bills;
+  List<MealModel> get bills => _bills;
 
   // ✅ Add a new bill
-  void addBill(MonthlyBillModel bill) {
+  void addBill(MealModel bill) {
     _bills.add(bill);
     notifyListeners();
   }
 
   // ✅ Delete a bill
-  void deleteBill(MonthlyBillModel bill) {
+  void deleteBill(MealModel bill) {
     _bills.remove(bill);
     notifyListeners();
   }
 
   // ✅ Edit a bill
-  void updateBill(MonthlyBillModel oldBill, MonthlyBillModel newBill) {
+  void updateBill(MealModel oldBill, MealModel newBill) {
     final index = _bills.indexOf(oldBill);
     if (index != -1) {
       _bills[index] = newBill;
@@ -28,14 +28,14 @@ class MonthlyBillProvider with ChangeNotifier {
   }
 
   // ✅ Get bills for specific month & year
-  List<MonthlyBillModel> getBillsForMonth(int year, int month) {
+  List<MealModel> getBillsForMonth(int year, int month) {
     return _bills
         .where((b) => b.date.year == year && b.date.month == month)
         .toList();
   }
 
   // ✅ Search by name within a month
-  List<MonthlyBillModel> searchByName(String name, int year, int month) {
+  List<MealModel> searchByName(String name, int year, int month) {
     return getBillsForMonth(year, month)
         .where((b) => b.name.toLowerCase().contains(name.toLowerCase()))
         .toList();

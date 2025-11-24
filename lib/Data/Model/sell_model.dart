@@ -1,7 +1,7 @@
 class SellModel {
   DateTime date;
   double amount;
-  double netCash; // purchase + expense বাদ দেওয়ার পর বাকি টাকাটা
+  double netCash;
 
   SellModel({
     required this.date,

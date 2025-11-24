@@ -1,39 +1,32 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../Provider/sell_provider.dart';
 import 'package:intl/intl.dart';
-import '../Controller/expense_provider.dart';
-import '../Controller/sell_provider.dart';
+
 import '../Widget/Page_Title_widget.dart';
 import '../Widget/appbar_widget.dart';
 import '../Widget/total_card_widget.dart';
 
-class MonthlyNetCashView extends StatefulWidget {
-  const MonthlyNetCashView({super.key});
+class SellSummaryScreen extends StatefulWidget {
+  const SellSummaryScreen({super.key});
 
   @override
-  State<MonthlyNetCashView> createState() => _MonthlyNetCashViewState();
+  State<SellSummaryScreen> createState() => _SellSummaryScreenState();
 }
 
-class _MonthlyNetCashViewState extends State<MonthlyNetCashView> {
+class _SellSummaryScreenState extends State<SellSummaryScreen> {
   int selectedMonth = DateTime.now().month;
   int selectedYear = DateTime.now().year;
 
   @override
   Widget build(BuildContext context) {
-    final sellProvider = Provider.of<SellProvider>(context);
-    final expenseProvider = Provider.of<ExpenseProvider>(context);
+    final provider = Provider.of<SellProvider>(context);
+    final monthList = provider.getMonthlySellList(selectedMonth, selectedYear);
+    final total = provider.getMonthlyTotalSell(selectedMonth, selectedYear);
 
-    // Selected month-এর sell list
-    final monthSells = sellProvider.getMonthlySellList(selectedMonth, selectedYear);
 
-    // প্রতিদিনের net cash
-    final dailyNetCash = <DateTime, double>{};
-    for (var s in monthSells) {
-      dailyNetCash[s.date] = s.netCash;
-    }
-
-    // মাসের total net cash
-    final totalNetCash = monthSells.fold(0.0, (sum, s) => sum + s.netCash);
+    // মাসের নাম
+    final monthName = DateFormat.MMMM().format(DateTime(selectedYear, selectedMonth));
 
     return Scaffold(
       backgroundColor: Colors.green.shade50,
@@ -42,16 +35,13 @@ class _MonthlyNetCashViewState extends State<MonthlyNetCashView> {
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            PageTitleWidget(title: "Monthly Net Cash Report - ${DateFormat.MMMM().format(DateTime(selectedYear, selectedMonth))} $selectedYear"),
+            PageTitleWidget( title: "Monthly Sells Report - $monthName $selectedYear"),
             const SizedBox(height: 20),
-
             // Month & Year Dropdown
             Row(
               children: [
                 Expanded(
                   child: Card(
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    color: Colors.green.shade50,
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 12),
                       child: DropdownButton<int>(
@@ -60,7 +50,8 @@ class _MonthlyNetCashViewState extends State<MonthlyNetCashView> {
                         items: List.generate(12, (i) => i + 1)
                             .map((m) => DropdownMenuItem(
                           value: m,
-                          child: Text(DateFormat.MMMM().format(DateTime(0, m))),
+                          child: Text(
+                              DateFormat.MMMM().format(DateTime(0, m))),
                         ))
                             .toList(),
                         onChanged: (val) => setState(() => selectedMonth = val!),
@@ -72,15 +63,14 @@ class _MonthlyNetCashViewState extends State<MonthlyNetCashView> {
                 const SizedBox(width: 12),
                 Expanded(
                   child: Card(
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    color: Colors.green.shade50,
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 12),
                       child: DropdownButton<int>(
                         value: selectedYear,
                         underline: const SizedBox(),
                         items: [2024, 2025, 2026]
-                            .map((y) => DropdownMenuItem(value: y, child: Text("$y")))
+                            .map((y) =>
+                            DropdownMenuItem(value: y, child: Text("$y")))
                             .toList(),
                         onChanged: (val) => setState(() => selectedYear = val!),
                         isExpanded: true,
@@ -92,31 +82,48 @@ class _MonthlyNetCashViewState extends State<MonthlyNetCashView> {
             ),
             const SizedBox(height: 16),
 
-            // Daily Net Cash List
+            // Monthly Sell List
             Expanded(
-              child: dailyNetCash.isEmpty
-                  ? const Center(
-                child: Text("No Net Cash Records Found",
-                    style: TextStyle(fontSize: 16, color: Colors.grey)),
+              child: monthList.isEmpty
+                  ? Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: const [
+                    Icon(Icons.sell, size: 50, color: Colors.grey),
+                    SizedBox(height: 8),
+                    Text("No Sell Records Found",
+                        style: TextStyle(
+                            fontSize: 16, color: Colors.grey)),
+                  ],
+                ),
               )
                   : ListView.builder(
-                itemCount: dailyNetCash.length,
+                itemCount: monthList.length,
                 itemBuilder: (context, index) {
-                  final date = dailyNetCash.keys.elementAt(index);
-                  final netCash = dailyNetCash[date]!;
-                  final color = netCash >= 0 ? Colors.green : Colors.red;
+                  final s = monthList[index];
+                  Color netCashColor =
+                  s.netCash >= 0 ? Colors.green : Colors.red;
 
                   return Card(
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     elevation: 3,
                     margin: const EdgeInsets.symmetric(vertical: 6),
                     child: ListTile(
-                      leading: const Icon(Icons.attach_money, color: Colors.green),
-                      title: Text("${DateFormat.d().format(date)} ${DateFormat.MMMM().format(date)} ${date.year}"),
-                      trailing: Text(
-                        "৳${netCash.toStringAsFixed(2)}",
+                      leading: const Icon(Icons.sell, color: Colors.green),
+                      title: Text(
+                          "${DateFormat.d().format(s.date)} ${DateFormat.MMMM().format(s.date)} ${s.date.year}"),
+                      subtitle: Text(
+                        "Net Cash: AED ${s.netCash.toStringAsFixed(2)}",
                         style: TextStyle(
-                            color: color, fontWeight: FontWeight.bold, fontSize: 16),
+                            fontWeight: FontWeight.bold,
+                            color: netCashColor),
+                      ),
+                      trailing: Text(
+
+                        "AED ${s.amount}",
+                        style: const TextStyle(
+                            color: Colors.green,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16),
                       ),
                     ),
                   );
@@ -124,8 +131,8 @@ class _MonthlyNetCashViewState extends State<MonthlyNetCashView> {
               ),
             ),
 
-            // Total Monthly Net Cash
-            TotalCardWidget(total: totalNetCash, title: "Monthly Total Net Cash"),
+            // Monthly Total Card
+            TotalCardWidget(total: total, title: "Monthly Total Sells")
           ],
         ),
       ),

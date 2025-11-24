@@ -1,88 +1,53 @@
 import 'package:email_validator/email_validator.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
-import 'package:provider/provider.dart';
-import 'package:rukin_cafeteria/Ui/Screen/singup_screen.dart';
+
+import 'login_screen.dart';
 
 
-import '../Provider/user_provider.dart';
-import 'forget_password_screen.dart';
-import 'home_screen.dart';
-
-class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+class ForgetPasswordScreen extends StatefulWidget {
+  const ForgetPasswordScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  State<ForgetPasswordScreen> createState() => _ForgetPasswordScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _ForgetPasswordScreenState extends State<ForgetPasswordScreen> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
-  bool _isPasswordVisible = false;
-  bool _loginLoading = false;
+  bool _forgetPasswordLoading = false;
 
-  Future<void> _login() async {
+  Future<void> _forgetPassword() async {
     if (_formKey.currentState!.validate()) {
-      setState(() => _loginLoading = true);
-
+      setState(() => _forgetPasswordLoading = true);
       try {
-        await FirebaseAuth.instance.signInWithEmailAndPassword(
+        await FirebaseAuth.instance.sendPasswordResetEmail(
           email: _emailController.text.trim(),
-          password: _passwordController.text.trim(),
         );
-
-        final uid = FirebaseAuth.instance.currentUser!.uid;
-        Provider.of<UserProvider>(context, listen: false).init(uid);
-
-        // SUCCESS SNACKBAR
-        Fluttertoast.showToast(
-          msg: "Login Successful",
-          toastLength: Toast.LENGTH_SHORT,
-          gravity: ToastGravity.BOTTOM,
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Password reset link sent")),
         );
-
-
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const HomeScreen()),
-        );
-
+       Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => const LoginScreen()), (route) => false);
       } on FirebaseAuthException catch (e) {
-        if (e.code == 'invalid-credential') {
-          Fluttertoast.showToast(
-            msg: "Invalid email or password",
-            toastLength: Toast.LENGTH_SHORT,
-            gravity: ToastGravity.BOTTOM,
+        if (e.code == 'user-not-found') {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("No user found for that email")),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(e.toString())),
           );
         }
-      } catch (e) {
-        Fluttertoast.showToast(
-          msg: "An error occurred. Please try again later.",
-          toastLength: Toast.LENGTH_SHORT,
-          gravity: ToastGravity.BOTTOM,
-        );
+        setState(() => _forgetPasswordLoading = false);
       } finally {
-        setState(() => _loginLoading = false);
+        setState(() => _forgetPasswordLoading = false);
+        if (_forgetPasswordLoading == false) {
+          Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => const LoginScreen()), (route) => false);
+        }
       }
     }
   }
 
-
-  void _signup() {
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => const SignupScreen()),
-    );
-  }
-  void _forgetPassword() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => const ForgetPasswordScreen()),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -145,7 +110,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: Column(
                     children: [
                       const Text(
-                        "Login to Continue",
+                        "Forgot Password",
                         style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
@@ -177,50 +142,11 @@ class _LoginScreenState extends State<LoginScreen> {
                           return null;
                         },
                       ),
-
-                      const SizedBox(height: 16),
-
-                      // Password Field
-                      TextFormField(
-                        controller: _passwordController,
-                        obscureText: !_isPasswordVisible,
-                        decoration: InputDecoration(
-                          labelText: "Password",
-                          prefixIcon: const Icon(Icons.lock_outline),
-                          suffixIcon: IconButton(
-                            icon: Icon(
-                              _isPasswordVisible
-                                  ? Icons.visibility
-                                  : Icons.visibility_off,
-                            ),
-                            onPressed: () {
-                              setState(() {
-                                _isPasswordVisible = !_isPasswordVisible;
-                              });
-                            },
-                          ),
-                          filled: true,
-                          fillColor: Colors.grey.shade100,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide.none,
-                          ),
-                        ),
-                        validator: (String? value) {
-                          if (value == null || value.isEmpty) {
-                            return "Please enter your password";
-                          } else if (value.length < 6) {
-                            return "Password must be at least 6 characters";
-                          }
-                          return null;
-                        },
-                      ),
-
                       const SizedBox(height: 24),
 
                       // Login Button
                       Visibility(
-                        visible: _loginLoading == false,
+                        visible: _forgetPasswordLoading == false,
                         replacement: CircularProgressIndicator(),
                         child: SizedBox(
                           width: double.infinity,
@@ -233,9 +159,9 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                               elevation: 4,
                             ),
-                            onPressed: _login,
+                            onPressed: _forgetPassword,
                             child: const Text(
-                              "LOGIN",
+                              "Send Link",
                               style: TextStyle(
                                 fontSize: 16,
                                 letterSpacing: 1,
@@ -251,30 +177,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ),
             ),
-
-            const SizedBox(height: 24),
-
-            // Forgot Password + Sign Up
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                TextButton(
-                  onPressed: _forgetPassword,
-                  child: const Text(
-                    "Forgot Password?",
-                    style: TextStyle(color: Colors.green),
-                  ),
-                ),
-                const Text("|"),
-                TextButton(
-                  onPressed: _signup,
-                  child: const Text(
-                    "Sign Up",
-                    style: TextStyle(color: Colors.green),
-                  ),
-                ),
-              ],
-            ),
           ],
         ),
       ),
@@ -282,7 +184,6 @@ class _LoginScreenState extends State<LoginScreen> {
   }
   dispose() {
     _emailController.dispose();
-    _passwordController.dispose();
     super.dispose();
   }
 }

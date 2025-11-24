@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import '../Controller/expense_provider.dart';
+import '../Provider/expense_provider.dart';
 import '../Widget/Page_Title_widget.dart';
 import '../Widget/appbar_widget.dart';
 import '../Widget/daily_detail_dialog_widget.dart';
@@ -53,10 +53,6 @@ class _ExpenseSummaryScreenState extends State<ExpenseSummaryScreen> {
               children: [
                 Expanded(
                   child: Card(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    color: Colors.green.shade50,
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 12),
                       child: DropdownButton<int>(
@@ -79,10 +75,6 @@ class _ExpenseSummaryScreenState extends State<ExpenseSummaryScreen> {
                 const SizedBox(width: 12),
                 Expanded(
                   child: Card(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    color: Colors.green.shade50,
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 12),
                       child: DropdownButton<int>(
@@ -134,9 +126,6 @@ class _ExpenseSummaryScreenState extends State<ExpenseSummaryScreen> {
                       .toList();
 
                   return Card(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
                     margin: const EdgeInsets.symmetric(vertical: 6),
                     child: ListTile(
                       onTap: () {

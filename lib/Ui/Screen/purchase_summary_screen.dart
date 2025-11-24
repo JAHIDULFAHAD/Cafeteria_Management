@@ -1,20 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../Controller/purchase_provider.dart';
+import '../Provider/purchase_provider.dart';
 import '../Widget/Page_Title_widget.dart';
 import '../Widget/appbar_widget.dart';
 import '../Widget/daily_detail_dialog_widget.dart';
 import '../Widget/total_card_widget.dart';
 import 'package:intl/intl.dart';
 
-class MonthlyPurchaseView extends StatefulWidget {
-  const MonthlyPurchaseView({super.key});
+class PurchaseSummaryScreen extends StatefulWidget {
+  const PurchaseSummaryScreen({super.key});
 
   @override
-  State<MonthlyPurchaseView> createState() => _MonthlyPurchaseViewState();
+  State<PurchaseSummaryScreen> createState() => _PurchaseSummaryScreenState();
 }
 
-class _MonthlyPurchaseViewState extends State<MonthlyPurchaseView> {
+class _PurchaseSummaryScreenState extends State<PurchaseSummaryScreen> {
   int selectedMonth = DateTime.now().month;
   int selectedYear = DateTime.now().year;
 
@@ -55,9 +55,6 @@ class _MonthlyPurchaseViewState extends State<MonthlyPurchaseView> {
               children: [
                 Expanded(
                   child: Card(
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12)),
-                    color: Colors.green.shade50,
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 12),
                       child: DropdownButton<int>(
@@ -80,9 +77,6 @@ class _MonthlyPurchaseViewState extends State<MonthlyPurchaseView> {
                 const SizedBox(width: 12),
                 Expanded(
                   child: Card(
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12)),
-                    color: Colors.green.shade50,
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 12),
                       child: DropdownButton<int>(

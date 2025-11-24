@@ -4,14 +4,14 @@ import 'expense_provider.dart';
 import 'sell_provider.dart';
 import 'purchase_provider.dart';
 
-class DashboardController extends ChangeNotifier {
+class DashboardProvider extends ChangeNotifier {
   late DashboardModel _dashboard;
 
   final SellProvider sellProvider;
   final PurchaseProvider purchaseProvider;
   final ExpenseProvider expenseProvider;
 
-  DashboardController({
+  DashboardProvider({
     required this.sellProvider,
     required this.purchaseProvider,
     required this.expenseProvider,

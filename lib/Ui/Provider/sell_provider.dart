@@ -1,17 +1,17 @@
 import 'package:flutter/foundation.dart';
 import '../../Data/Model/purchase_model.dart';
-import '../../Data/Model/salary_otherexpense_model.dart';
+import '../../Data/Model/expense_model.dart';
 import '../../Data/Model/sell_model.dart';
 
 class SellProvider with ChangeNotifier {
   final List<SellModel> _sells = [];
-  final List<DailyPurchaseModel> _purchases = [];
+  final List<PurchaseModel> _purchases = [];
   final List<ExpenseModel> _expenses = [];
 
   List<SellModel> get sells => _sells;
 
   // Update Purchases
-  void updatePurchases(List<DailyPurchaseModel> newPurchases) {
+  void updatePurchases(List<PurchaseModel> newPurchases) {
     _purchases
       ..clear()
       ..addAll(newPurchases);

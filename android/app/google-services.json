@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "589084409680",
+    "project_id": "cafeteria-management-a0c82",
+    "storage_bucket": "cafeteria-management-a0c82.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:589084409680:android:e97fba8ce3672ee3b2b655",
+        "android_client_info": {
+          "package_name": "rukin.example.rukin_cafeteria"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDESChjopKqysoks3dOjIjb_RtJnLVDZpI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

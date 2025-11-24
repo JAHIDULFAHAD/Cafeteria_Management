@@ -1,10 +1,9 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:email_validator/email_validator.dart';
-import '../../Data/Model/user_model.dart';
-import '../Controller/user_provider.dart';
-import 'home_screen.dart';
 import 'login_screen.dart';
+
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -23,38 +22,62 @@ class _SignupScreenState extends State<SignupScreen> {
   final TextEditingController _passwordController = TextEditingController();
 
   bool _isPasswordVisible = false;
+  bool _signupLoading = false;
 
-  void _signup() {
-    final userProvider = Provider.of<UserProvider>(context, listen: false);
 
+  Future<void> _signup() async {
     if (_formKey.currentState!.validate()) {
-      if (userProvider.emailExists(_emailController.text.trim())) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("❌ Email already registered")),
+      setState(() => _signupLoading = true);
+      FirebaseAuth auth = FirebaseAuth.instance;
+
+      try {
+        UserCredential userCredential =
+            await FirebaseAuth.instance.createUserWithEmailAndPassword(
+          email: _emailController.text.trim(),
+          password: _passwordController.text.trim(),
         );
-        return;
+
+        String uid = userCredential.user!.uid;
+
+        await FirebaseFirestore.instance.collection('users').doc(uid).set({
+          'name': _nameController.text.trim(),
+          'email': _emailController.text.trim(),
+          'phone': _phoneController.text.trim(),
+          'cafeteriaName': _cafeteriaController.text.trim(),
+          'location': _locationController.text.trim(),
+          'createdAt': FieldValue.serverTimestamp(),
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Signup successful! Please login.")),
+        );
+
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => LoginScreen()),
+        );
+
+      } on FirebaseAuthException catch (e) {
+        if (e.code == 'weak-password') {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("The password provided is too weak."),));
+        } else if (e.code == 'email-already-in-use') {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("The account already exists for that email."),));
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("Error: $e")),
+          );
+        }
+        setState(() => _signupLoading = false);
       }
-
-      final user = UserModel(
-        name: _nameController.text.trim(),
-        email: _emailController.text.trim(),
-        phone: _phoneController.text.trim(),
-        cafeteriaName: _cafeteriaController.text.trim(),
-        location: _locationController.text.trim(),
-        password: _passwordController.text.trim(),
-      );
-
-      userProvider.addUser(user);
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("✅ Signup successful Please Login")),
-      );
-
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const LoginScreen()),
-      );
-    }
+      catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Error: $e")),
+        );
+        setState(() => _signupLoading = false);
+      }
+      }
   }
 
   @override
@@ -261,25 +284,29 @@ class _SignupScreenState extends State<SignupScreen> {
                       const SizedBox(height: 24),
 
                       // Signup Button
-                      SizedBox(
-                        width: double.infinity,
-                        height: 48,
-                        child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF2E7D32),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
+                      Visibility(
+                        visible: !_signupLoading,
+                        replacement: CircularProgressIndicator(),
+                        child: SizedBox(
+                          width: double.infinity,
+                          height: 48,
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF2E7D32),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              elevation: 4,
                             ),
-                            elevation: 4,
-                          ),
-                          onPressed: _signup,
-                          child: const Text(
-                            "SIGN UP",
-                            style: TextStyle(
-                              fontSize: 16,
-                              letterSpacing: 1,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
+                            onPressed: _signup,
+                            child: const Text(
+                              "SIGN UP",
+                              style: TextStyle(
+                                fontSize: 16,
+                                letterSpacing: 1,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
                             ),
                           ),
                         ),

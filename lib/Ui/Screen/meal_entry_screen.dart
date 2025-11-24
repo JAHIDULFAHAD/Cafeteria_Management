@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../Data/Model/mess_model.dart';
-import '../Controller/mass_provider.dart';
+import '../../Data/Model/meal_model.dart';
+import '../Provider/meal_provider.dart';
 import '../Widget/Page_Title_widget.dart';
-import 'monthly_mess_screen.dart';
+import 'meal_summary_screen.dart';
 
-class AddMessPage extends StatefulWidget {
-  const AddMessPage({super.key});
+class MealEntryScreen extends StatefulWidget {
+  const MealEntryScreen({super.key});
 
   @override
-  State<AddMessPage> createState() => _AddMessPageState();
+  State<MealEntryScreen> createState() => _MealEntryScreenState();
 }
 
-class _AddMessPageState extends State<AddMessPage> {
+class _MealEntryScreenState extends State<MealEntryScreen> {
   final _formKey = GlobalKey<FormState>();
   final nameController = TextEditingController();
   final billController = TextEditingController();
@@ -28,7 +28,7 @@ class _AddMessPageState extends State<AddMessPage> {
 
   void _addBill(BuildContext context) {
     if (_formKey.currentState!.validate()) {
-      final provider = Provider.of<MonthlyBillProvider>(context, listen: false);
+      final provider = Provider.of<MealProvider>(context, listen: false);
 
       // ✅ Parse values safely as double
       final double mass = double.tryParse(billController.text.trim()) ?? 0.0;
@@ -38,7 +38,7 @@ class _AddMessPageState extends State<AddMessPage> {
       final String name = nameController.text.trim();
 
       provider.addBill(
-        MonthlyBillModel(
+        MealModel(
           name: name,
           massBill: mass,
           advanceBill: adv,
@@ -63,6 +63,7 @@ class _AddMessPageState extends State<AddMessPage> {
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             PageTitleWidget(title: "Add Mess Bill - (${months[selectedMonth-1]} $selectedYear)"),
             SizedBox(height: 20,),
@@ -82,8 +83,6 @@ class _AddMessPageState extends State<AddMessPage> {
                         children: [
                           Expanded(
                             child: Card(
-                              color: Colors.green.shade50,
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                               child: Padding(
                                 padding: const EdgeInsets.symmetric(horizontal: 12),
                                 child: DropdownButton<int>(
@@ -103,8 +102,6 @@ class _AddMessPageState extends State<AddMessPage> {
                           const SizedBox(width: 12),
                           Expanded(
                             child: Card(
-                              color: Colors.green.shade50,
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                               child: Padding(
                                 padding: const EdgeInsets.symmetric(horizontal: 12),
                                 child: DropdownButton<int>(
@@ -224,11 +221,11 @@ class _AddMessPageState extends State<AddMessPage> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                      builder: (_) => const MessRecordPage()),
+                      builder: (_) => const MealSummaryScreen()),
                 );
               },
               icon: const Icon(Icons.calendar_month),
-              label: const Text("View Monthly Mess Bill"),
+              label: const Text("View Meal Summary"),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.greenAccent,
                 minimumSize: const Size(double.infinity, 50),

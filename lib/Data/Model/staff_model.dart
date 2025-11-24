@@ -2,7 +2,7 @@ class StaffModel {
   final String id;
   String name;
   double salary; // Base salary
-  double pendingSalary; // পরের মাসের বকেয়া
+  double pendingSalary;
 
   StaffModel({
     required this.id,

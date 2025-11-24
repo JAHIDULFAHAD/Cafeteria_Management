@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../Controller/navigation_provider.dart';
+import '../Provider/navigation_provider.dart';
 import '../Widget/appbar_widget.dart';
-import 'add_mase_screen.dart';
-import 'daily_expense_screen.dart';
+import 'meal_entry_screen.dart';
+import 'expense_entry_screen.dart';
 import 'dashboard_screen.dart';
-import 'daily_purchase_screen.dart';
-import 'daily_sell_screen.dart';
+import 'purchase_entry_screen.dart';
+import 'sell_entry_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -17,10 +17,10 @@ class HomeScreen extends StatelessWidget {
 
     final pages = [
       const DashboardScreen(),
-      const DailySellScreen(),
-      const DailyPurchaseScreen(),
-      const ExpenseEntryView(),
-      const AddMessPage(),
+      const SellEntryScreen(),
+      const PurchaseEntryScreen(),
+      const ExpenseEntryScreen(),
+      const MealEntryScreen(),
     ];
     return Scaffold(
       appBar: AppbarWidget(),
@@ -38,7 +38,7 @@ class HomeScreen extends StatelessWidget {
           BottomNavigationBarItem(icon: Icon(Icons.sell), label: 'Sell'),
           BottomNavigationBarItem(icon: Icon(Icons.shopping_cart), label: 'Purchase'),
           BottomNavigationBarItem(icon: Icon(Icons.monetization_on), label: 'Expense'),
-          BottomNavigationBarItem(icon: Icon(Icons.person_pin_rounded), label: 'Mess'),
+          BottomNavigationBarItem(icon: Icon(Icons.person_pin_rounded), label: 'Meal'),
         ],
       ),
     );

@@ -17,6 +17,12 @@ dependencies:
   email_validator: ^2.1.17
   intl: ^0.18.1
   collection: ^1.17.0
+  firebase_core: ^4.2.1
+  cloud_firestore: ^6.1.0
+  firebase_auth: ^6.1.2
+  fluttertoast: ^8.2.4
+
+
 
 dev_dependencies:
   flutter_test:

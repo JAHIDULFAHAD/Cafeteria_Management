@@ -31,9 +31,6 @@ class ItemListCard<T> extends StatelessWidget {
         return Card(
           margin: const EdgeInsets.symmetric(vertical: 6),
           elevation: 3,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
           child: ListTile(
             leading: leading(item),
             title: title(item),

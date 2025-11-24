@@ -1,10 +1,10 @@
-class MonthlyBillModel {
+class MealModel {
   String name;
   double massBill;
   double advanceBill;
   DateTime date;
 
-  MonthlyBillModel({
+  MealModel({
     required this.name,
     required this.massBill,
     required this.advanceBill,

@@ -3,16 +3,16 @@ import '../../Data/Model/purchase_model.dart';
 import 'sell_provider.dart';
 
 class PurchaseProvider with ChangeNotifier {
-  final List<DailyPurchaseModel> _purchases = [];
+  final List<PurchaseModel> _purchases = [];
   final SellProvider sellProvider;
 
   PurchaseProvider({required this.sellProvider});
 
-  List<DailyPurchaseModel> get purchases => _purchases;
+  List<PurchaseModel> get purchases => _purchases;
 
   // Add new purchase
   void addPurchase(String item, double amount, DateTime date) {
-    _purchases.add(DailyPurchaseModel(item: item, amount: amount, date: date));
+    _purchases.add(PurchaseModel(item: item, amount: amount, date: date));
     sellProvider.updatePurchases(_purchases);
     notifyListeners();
   }
@@ -26,7 +26,7 @@ class PurchaseProvider with ChangeNotifier {
 
   // Edit purchase
   void editPurchase(int index, String newItem, double newAmount) {
-    _purchases[index] = DailyPurchaseModel(
+    _purchases[index] = PurchaseModel(
       item: newItem,
       amount: newAmount,
       date: _purchases[index].date,
@@ -36,7 +36,7 @@ class PurchaseProvider with ChangeNotifier {
   }
 
   // Get purchases for a specific day
-  List<DailyPurchaseModel> getDailyByDate(DateTime date) {
+  List<PurchaseModel> getDailyByDate(DateTime date) {
     return _purchases
         .where((p) =>
     p.date.year == date.year &&
@@ -63,7 +63,7 @@ class PurchaseProvider with ChangeNotifier {
   }
 
   // ✅ Get all purchases for a given month
-  List<DailyPurchaseModel> getMonthlyPurchases(int year, int month) {
+  List<PurchaseModel> getMonthlyPurchases(int year, int month) {
     return _purchases
         .where((p) => p.date.year == year && p.date.month == month)
         .toList();

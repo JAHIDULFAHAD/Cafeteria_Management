@@ -1,21 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:rukin_cafeteria/Ui/Screen/staff_screen.dart';
-import '../Controller/dashboard_controller.dart';
+import 'package:rukin_cafeteria/Ui/Screen/staff_manage_screen.dart';
+import '../Provider/dashboard_controller.dart';
 import '../Widget/build_action_button_widget.dart';
 import '../Widget/build_summarycard.dart';
-import 'monthly_Purchase_screen.dart';
-import 'monthly_expence_screen.dart';
-import 'monthly_mess_screen.dart';
-import 'monthly_net_cash_screen.dart';
-import 'monthly_sell_screen.dart';
+import 'purchase_summary_screen.dart';
+import 'expence_summary_screen.dart';
+import 'meal_summary_screen.dart';
+import 'net_cash_summary_screen.dart';
+import 'sell_summary_screen.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final controller = Provider.of<DashboardController>(context);
+    final controller = Provider.of<DashboardProvider>(context);
 
     return Scaffold(
       body: SingleChildScrollView(
@@ -23,41 +23,44 @@ class DashboardScreen extends StatelessWidget {
         child: Column(
           children: [
             // SUMMARY CARDS
-            Row(
-              children: [
-                BuildSummaryWidget(
-                  title: "Net Cash Today",
-                  value: controller.todayNetCash,
-                  icon: Icons.today,
-                  color: Colors.orange,
-                ),
-                const SizedBox(width: 8),
-                BuildSummaryWidget(
-                  title: "Monthly Net Cash",
-                  value: controller.monthlyNetCash,
-                  icon: Icons.calendar_today,
-                  color: Colors.blue,
-                ),
-              ],
+            SizedBox(
+              height: 250,
+              width: double.infinity,
+              child: ListView(
+                scrollDirection: Axis.horizontal, // horizontal scroll
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                children: [
+                  BuildSummaryWidget(
+                    title: "Net Cash Today",
+                    value: controller.todayNetCash,
+                    icon: Icons.today,
+                    color: Colors.orange,
+                  ),
+                  const SizedBox(width: 12),
+                  BuildSummaryWidget(
+                    title: "Monthly Net Cash",
+                    value: controller.monthlyNetCash,
+                    icon: Icons.calendar_today,
+                    color: Colors.blue,
+                  ),
+                  const SizedBox(width: 12),
+                  BuildSummaryWidget(
+                    title: "Monthly Sells",
+                    value: controller.monthlyTotalSells,
+                    icon: Icons.sell,
+                    color: Colors.green,
+                  ),
+                  const SizedBox(width: 12),
+                  BuildSummaryWidget(
+                    title: "Monthly Purchases",
+                    value: controller.monthlyTotalPurchases,
+                    icon: Icons.shopping_cart,
+                    color: Colors.red,
+                  ),
+                ],
+              ),
             ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                BuildSummaryWidget(
-                  title: "Monthly Sells",
-                  value: controller.monthlyTotalSells,
-                  icon: Icons.sell,
-                  color: Colors.green,
-                ),
-                const SizedBox(width: 8),
-                BuildSummaryWidget(
-                  title: "Monthly Purchases",
-                  value: controller.monthlyTotalPurchases,
-                  icon: Icons.shopping_cart,
-                  color: Colors.red,
-                ),
-              ],
-            ),
+
             const SizedBox(height: 24),
             // QUICK ACTION BUTTONS
             GridView.count(
@@ -68,42 +71,42 @@ class DashboardScreen extends StatelessWidget {
               crossAxisSpacing: 12,
               children: [
                 BuildActionButtonWidget(
-                  title: "Monthly Net Cash",
+                  title: "NetCash Summary",
                   icon: Icons.bar_chart,
                   color: Colors.teal,
                   onTap: () {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                          builder: (context) => MonthlyNetCashView()),
+                          builder: (context) => NetCashSummaryScreen()),
                     );
                   },
                 ),
                 BuildActionButtonWidget(
-                  title: "Monthly Sells",
+                  title: "Sells Summary",
                   icon: Icons.sell,
                   color: Colors.orange,
                   onTap: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => MonthlySellView()),
+                      MaterialPageRoute(builder: (context) => SellSummaryScreen()),
                     );
                   },
                 ),
                 BuildActionButtonWidget(
-                  title: "Monthly Purchases",
+                  title: "Purchases Summary",
                   icon: Icons.shopping_cart,
                   color: Colors.blue,
                   onTap: () {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                          builder: (context) => MonthlyPurchaseView()),
+                          builder: (context) => PurchaseSummaryScreen()),
                     );
                   },
                 ),
                 BuildActionButtonWidget(
-                  title: "Monthly Expenses",
+                  title: "Expenses Summary",
                   icon: Icons.monetization_on,
                   color: Colors.red,
                   onTap: () {
@@ -115,25 +118,25 @@ class DashboardScreen extends StatelessWidget {
                   },
                 ),
                 BuildActionButtonWidget(
-                  title: "Monthly Mess",
+                  title: "Meal Summary",
                   icon: Icons.person_pin_rounded,
                   color: Colors.purple,
                   onTap: () {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                          builder: (context) => MessRecordPage()),
+                          builder: (context) => MealSummaryScreen()),
                     );
                   },
                 ),
                 BuildActionButtonWidget(
-                  title: "Staffs",
+                  title: "Manage Staffs",
                   icon: Icons.person,
                   color: Colors.green,
                   onTap: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => StaffManagementPage()),
+                      MaterialPageRoute(builder: (context) => StaffManageScreen()),
                     );
                   },
                 ),
