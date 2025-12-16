@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../Provider/expense_provider.dart';
+import '../Provider/sell_provider.dart';
 import '../Widget/Page_Title_widget.dart';
 import '../Widget/appbar_widget.dart';
 import '../Widget/daily_detail_dialog_widget.dart';
@@ -20,152 +21,186 @@ class _ExpenseSummaryScreenState extends State<ExpenseSummaryScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final expenseProvider = Provider.of<ExpenseProvider>(context);
-
-    // 🔹 Monthly expense list
-    final expenseList =
-    expenseProvider.getMonthlyExpenses(selectedYear, selectedMonth);
-
-    // 🔹 Monthly total
-    final total =
-    expenseProvider.getMonthlyTotalExpense(selectedYear, selectedMonth);
-
-    // 🔹 Daily totals
-    final dailyTotals =
-    expenseProvider.getDailyTotalsForMonth(selectedYear, selectedMonth);
-
-    final monthName =
-    DateFormat.MMMM().format(DateTime(selectedYear, selectedMonth));
-
     return Scaffold(
       backgroundColor: Colors.green.shade50,
-      appBar: AppbarWidget(),
+      appBar: const AppbarWidget(),
       body: Padding(
         padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            PageTitleWidget(
-                title: "Monthly Expense Summary - $monthName $selectedYear"),
-            const SizedBox(height: 20),
+        child: Consumer2<ExpenseProvider, SellProvider>(
+          builder: (context, expenseProvider, sellProvider, _) {
+            final expenseList =
+            expenseProvider.getMonthlyExpenses(selectedYear, selectedMonth);
+            final totalExpense =
+            expenseProvider.getMonthlyTotalExpense(selectedYear, selectedMonth);
 
-            // 🔹 Month & Year Dropdowns (Card style)
-            Row(
+            final dailyTotals =
+            expenseProvider.getDailyTotalsForMonth(selectedYear, selectedMonth);
+
+            // Calculate daily netCash
+            final Map<DateTime, double> dailyNetCash = {};
+            for (var date in dailyTotals.keys) {
+              final sell = sellProvider.getSellByDate(date);
+              if (sell != null) dailyNetCash[date] = sell.netCash;
+            }
+
+            // Calculate monthly netCash
+            double monthlyNetCash = sellProvider
+                .getMonthlySellList(selectedMonth, selectedYear)
+                .fold(0.0, (sum, s) => sum + s.netCash);
+
+            final monthName =
+            DateFormat.MMMM().format(DateTime(selectedYear, selectedMonth));
+
+            return Column(
               children: [
-                Expanded(
-                  child: Card(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                      child: DropdownButton<int>(
-                        value: selectedMonth,
-                        underline: const SizedBox(),
-                        isExpanded: true,
-                        items: List.generate(12, (i) => i + 1)
-                            .map((m) => DropdownMenuItem(
-                          value: m,
-                          child: Text(
-                              DateFormat.MMMM().format(DateTime(2024, m))),
-                        ))
-                            .toList(),
-                        onChanged: (val) =>
-                            setState(() => selectedMonth = val!),
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Card(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                      child: DropdownButton<int>(
-                        value: selectedYear,
-                        underline: const SizedBox(),
-                        isExpanded: true,
-                        items: [2024, 2025, 2026]
-                            .map((y) => DropdownMenuItem(
-                          value: y,
-                          child: Text("$y"),
-                        ))
-                            .toList(),
-                        onChanged: (val) => setState(() => selectedYear = val!),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
+                PageTitleWidget(
+                    title: "Monthly Expense Summary - $monthName $selectedYear"),
+                const SizedBox(height: 20),
 
-            // 🔹 Daily totals list
-            Expanded(
-              child: dailyTotals.isEmpty
-                  ? const Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
+                // Month & Year Dropdowns
+                Row(
                   children: [
-                    Icon(Icons.money_off, size: 50, color: Colors.grey),
-                    SizedBox(height: 8),
-                    Text(
-                      "No Expense Records Found",
-                      style: TextStyle(fontSize: 16, color: Colors.grey),
-                    ),
-                  ],
-                ),
-              )
-                  : ListView(
-                children: dailyTotals.entries.map((entry) {
-                  final date = entry.key;
-                  final amount = entry.value;
-
-                  // 🔹 Get list of expenses for this day
-                  final dayExpenses = expenseProvider.expenses
-                      .where((e) =>
-                  e.date.year == date.year &&
-                      e.date.month == date.month &&
-                      e.date.day == date.day)
-                      .toList();
-
-                  return Card(
-                    margin: const EdgeInsets.symmetric(vertical: 6),
-                    child: ListTile(
-                      onTap: () {
-                        showItemListDialog(
-                          context: context,
-                          title: "Expenses",
-                          date: date,
-                          items: dayExpenses,
-                          itemName: (e) => e.title,
-                          itemAmount: (e) =>
-                              e.amount.toStringAsFixed(2),
-                          iconColor: Colors.green,
-                          icon: Icons.receipt_long,
-                          primaryColor: Colors.green,
-                        );
-                      },
-                      leading:
-                      const Icon(Icons.calendar_today, color: Colors.green),
-                      title: Text(
-                        DateFormat.yMMMMd().format(date),
-                        style: const TextStyle(fontWeight: FontWeight.w600),
-                      ),
-                      subtitle: const Text("Tap to view details"),
-                      trailing: Text(
-                        "AED ${amount.toStringAsFixed(2)}",
-                        style: const TextStyle(
-                          color: Colors.green,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
+                    Expanded(
+                      child: Card(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          child: DropdownButton<int>(
+                            value: selectedMonth,
+                            underline: const SizedBox(),
+                            isExpanded: true,
+                            items: List.generate(12, (i) => i + 1)
+                                .map((m) => DropdownMenuItem(
+                              value: m,
+                              child: Text(DateFormat.MMMM()
+                                  .format(DateTime(2024, m))),
+                            ))
+                                .toList(),
+                            onChanged: (val) => setState(() {
+                              selectedMonth = val!;
+                            }),
+                          ),
                         ),
                       ),
                     ),
-                  );
-                }).toList(),
-              ),
-            ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Card(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          child: DropdownButton<int>(
+                            value: selectedYear,
+                            underline: const SizedBox(),
+                            isExpanded: true,
+                            items: [2024, 2025, 2026]
+                                .map((y) => DropdownMenuItem(
+                              value: y,
+                              child: Text("$y"),
+                            ))
+                                .toList(),
+                            onChanged: (val) => setState(() {
+                              selectedYear = val!;
+                            }),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
 
-            // 🔹 Monthly Total Card
-            TotalCardWidget(total: total, title: "Monthly Total Expense"),
-          ],
+                // Daily totals list
+                Expanded(
+                  child: dailyTotals.isEmpty
+                      ? const Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.money_off,
+                            size: 50, color: Colors.grey),
+                        SizedBox(height: 8),
+                        Text(
+                          "No Expense Records Found",
+                          style: TextStyle(fontSize: 16, color: Colors.grey),
+                        ),
+                      ],
+                    ),
+                  )
+                      : ListView(
+                    children: dailyTotals.entries.map((entry) {
+                      final date = entry.key;
+                      final expenseAmount = entry.value;
+                      final netCash = dailyNetCash[date];
+
+                      final dayExpenses = expenseProvider.expenses
+                          .where((e) =>
+                      e.date.year == date.year &&
+                          e.date.month == date.month &&
+                          e.date.day == date.day)
+                          .toList();
+
+                      return Card(
+                        margin: const EdgeInsets.symmetric(vertical: 6),
+                        child: ListTile(
+                          onTap: () {
+                            showItemListDialog(
+                              context: context,
+                              title: "Expenses",
+                              date: date,
+                              items: dayExpenses,
+                              itemName: (e) => e.title,
+                              itemAmount: (e) =>
+                                  e.amount.toStringAsFixed(2),
+                              iconColor: Colors.green,
+                              icon: Icons.receipt_long,
+                              primaryColor: Colors.green,
+                            );
+                          },
+                          leading: const Icon(Icons.calendar_today,
+                              color: Colors.green),
+                          title: Text(
+                            DateFormat.yMMMMd().format(date),
+                            style: const TextStyle(
+                                fontWeight: FontWeight.w600),
+                          ),
+                          subtitle: const Text("Tap to view details"),
+                          trailing: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Text(
+                                "Exp: AED ${expenseAmount.toStringAsFixed(2)}",
+                                style: const TextStyle(
+                                  color: Colors.green,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14,
+                                ),
+                              ),
+                              if (netCash != null)
+                                Text(
+                                  "Net: AED ${netCash.toStringAsFixed(2)}",
+                                  style: const TextStyle(
+                                    color: Colors.blue,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ),
+
+                // Monthly Total Card
+                TotalCardWidget(
+                  total: totalExpense,
+                  title:
+                  "Monthly Total Expense\nMonthly NetCash: AED ${monthlyNetCash.toStringAsFixed(2)}",
+                ),
+              ],
+            );
+          },
         ),
       ),
     );

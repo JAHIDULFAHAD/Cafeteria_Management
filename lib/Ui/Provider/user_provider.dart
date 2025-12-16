@@ -22,7 +22,7 @@ class UserProvider with ChangeNotifier {
         .get(const GetOptions(source: Source.cache));
 
     if (cacheDoc.exists) {
-      _currentUser = UserModel.fromMap(cacheDoc.data()!);
+      _currentUser = UserModel.fromMap(cacheDoc);
       notifyListeners();
     }
 
@@ -39,7 +39,7 @@ class UserProvider with ChangeNotifier {
         .snapshots()
         .listen((snapshot) {
       if (snapshot.exists && snapshot.data() != null) {
-        _currentUser = UserModel.fromMap(snapshot.data()!);
+        _currentUser = UserModel.fromMap(snapshot);
         notifyListeners();
       }
     });

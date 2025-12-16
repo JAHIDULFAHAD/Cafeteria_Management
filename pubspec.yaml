@@ -21,6 +21,8 @@ dependencies:
   cloud_firestore: ^6.1.0
   firebase_auth: ^6.1.2
   fluttertoast: ^8.2.4
+  cloud_functions: ^6.0.4
+  shimmer: ^3.0.0
 
 
 

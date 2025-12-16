@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:shimmer/shimmer.dart';
+
+import 'listview_loader_widget.dart';
 
 class ItemListCard<T> extends StatelessWidget {
   final List<T> items;
@@ -7,6 +10,7 @@ class ItemListCard<T> extends StatelessWidget {
   final Widget? Function(T item)? subtitle;
   final void Function(T item, int index)? onEdit;
   final void Function(T item, int index)? onDelete;
+  final bool isLoading;
 
   const ItemListCard({
     Key? key,
@@ -16,10 +20,15 @@ class ItemListCard<T> extends StatelessWidget {
     this.subtitle,
     this.onEdit,
     this.onDelete,
+    this.isLoading = false,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    if (isLoading) {
+      return ListviewLoaderWidget();
+    }
+
     if (items.isEmpty) {
       return const Center(child: Text("No items for this date"));
     }
@@ -28,6 +37,7 @@ class ItemListCard<T> extends StatelessWidget {
       itemCount: items.length,
       itemBuilder: (context, index) {
         final item = items[index];
+
         return Card(
           margin: const EdgeInsets.symmetric(vertical: 6),
           elevation: 3,

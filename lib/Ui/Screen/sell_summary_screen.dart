@@ -24,9 +24,8 @@ class _SellSummaryScreenState extends State<SellSummaryScreen> {
     final monthList = provider.getMonthlySellList(selectedMonth, selectedYear);
     final total = provider.getMonthlyTotalSell(selectedMonth, selectedYear);
 
-
-    // মাসের নাম
-    final monthName = DateFormat.MMMM().format(DateTime(selectedYear, selectedMonth));
+    final monthName =
+    DateFormat.MMMM().format(DateTime(selectedYear, selectedMonth));
 
     return Scaffold(
       backgroundColor: Colors.green.shade50,
@@ -35,9 +34,12 @@ class _SellSummaryScreenState extends State<SellSummaryScreen> {
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            PageTitleWidget( title: "Monthly Sells Report - $monthName $selectedYear"),
+            PageTitleWidget(
+              title: "Monthly Sells Report - $monthName $selectedYear",
+            ),
             const SizedBox(height: 20),
-            // Month & Year Dropdown
+
+            // Month & Year Dropdowns
             Row(
               children: [
                 Expanded(
@@ -47,15 +49,19 @@ class _SellSummaryScreenState extends State<SellSummaryScreen> {
                       child: DropdownButton<int>(
                         value: selectedMonth,
                         underline: const SizedBox(),
+                        isExpanded: true,
                         items: List.generate(12, (i) => i + 1)
                             .map((m) => DropdownMenuItem(
                           value: m,
-                          child: Text(
-                              DateFormat.MMMM().format(DateTime(0, m))),
+                          child: Text(DateFormat.MMMM()
+                              .format(DateTime(0, m))),
                         ))
                             .toList(),
-                        onChanged: (val) => setState(() => selectedMonth = val!),
-                        isExpanded: true,
+                        onChanged: (val) {
+                          if (val != null) {
+                            setState(() => selectedMonth = val);
+                          }
+                        },
                       ),
                     ),
                   ),
@@ -68,12 +74,16 @@ class _SellSummaryScreenState extends State<SellSummaryScreen> {
                       child: DropdownButton<int>(
                         value: selectedYear,
                         underline: const SizedBox(),
+                        isExpanded: true,
                         items: [2024, 2025, 2026]
                             .map((y) =>
                             DropdownMenuItem(value: y, child: Text("$y")))
                             .toList(),
-                        onChanged: (val) => setState(() => selectedYear = val!),
-                        isExpanded: true,
+                        onChanged: (val) {
+                          if (val != null) {
+                            setState(() => selectedYear = val);
+                          }
+                        },
                       ),
                     ),
                   ),
@@ -91,9 +101,10 @@ class _SellSummaryScreenState extends State<SellSummaryScreen> {
                   children: const [
                     Icon(Icons.sell, size: 50, color: Colors.grey),
                     SizedBox(height: 8),
-                    Text("No Sell Records Found",
-                        style: TextStyle(
-                            fontSize: 16, color: Colors.grey)),
+                    Text(
+                      "No Sell Records Found",
+                      style: TextStyle(fontSize: 16, color: Colors.grey),
+                    ),
                   ],
                 ),
               )
@@ -108,7 +119,8 @@ class _SellSummaryScreenState extends State<SellSummaryScreen> {
                     elevation: 3,
                     margin: const EdgeInsets.symmetric(vertical: 6),
                     child: ListTile(
-                      leading: const Icon(Icons.sell, color: Colors.green),
+                      leading:
+                      const Icon(Icons.sell, color: Colors.green),
                       title: Text(
                           "${DateFormat.d().format(s.date)} ${DateFormat.MMMM().format(s.date)} ${s.date.year}"),
                       subtitle: Text(
@@ -118,8 +130,7 @@ class _SellSummaryScreenState extends State<SellSummaryScreen> {
                             color: netCashColor),
                       ),
                       trailing: Text(
-
-                        "AED ${s.amount}",
+                        "AED ${s.amount.toStringAsFixed(2)}",
                         style: const TextStyle(
                             color: Colors.green,
                             fontWeight: FontWeight.bold,
@@ -132,7 +143,7 @@ class _SellSummaryScreenState extends State<SellSummaryScreen> {
             ),
 
             // Monthly Total Card
-            TotalCardWidget(total: total, title: "Monthly Total Sells")
+            TotalCardWidget(total: total, title: "Monthly Total Sells"),
           ],
         ),
       ),

@@ -37,14 +37,11 @@ class _LoginScreenState extends State<LoginScreen> {
         final uid = FirebaseAuth.instance.currentUser!.uid;
         Provider.of<UserProvider>(context, listen: false).init(uid);
 
-        // SUCCESS SNACKBAR
         Fluttertoast.showToast(
           msg: "Login Successful",
           toastLength: Toast.LENGTH_SHORT,
           gravity: ToastGravity.BOTTOM,
         );
-
-
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const HomeScreen()),

@@ -20,7 +20,7 @@ class RukinCafeteria extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final sellProvider = SellProvider(); // Single instance
+    final sellProvider = SellProvider( ); // Single instance
     final purchaseProvider = PurchaseProvider(sellProvider: sellProvider);
     final expenseProvider = ExpenseProvider(sellProvider: sellProvider);
 

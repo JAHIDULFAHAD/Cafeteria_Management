@@ -21,7 +21,6 @@ class UserModel {
 
   Map<String, dynamic> toMap() {
     return {
-      'uid': uid,
       'name': name,
       'email': email,
       'phone': phone,
@@ -31,15 +30,17 @@ class UserModel {
     };
   }
 
-  factory UserModel.fromMap(Map<String, dynamic> map) {
+  factory UserModel.fromMap(DocumentSnapshot doc) {
+    final data = doc.data() as Map<String, dynamic>;
+
     return UserModel(
-      uid: map['uid'] ?? '',
-      name: map['name'] ?? '',
-      email: map['email'] ?? '',
-      phone: map['phone'] ?? '',
-      cafeteriaName: map['cafeteriaName'] ?? '',
-      location: map['location'] ?? '',
-      createdAt: (map['createdAt'] as Timestamp).toDate(),
+      uid: doc.id,
+      name: data['name'] ?? '',
+      email: data['email'] ?? '',
+      phone: data['phone'] ?? '',
+      cafeteriaName: data['cafeteriaName'] ?? '',
+      location: data['location'] ?? '',
+      createdAt: (data['createdAt'] as Timestamp).toDate(),
     );
   }
 }

@@ -17,30 +17,33 @@ class DatePickerWidget extends StatelessWidget {
         super(key: key);
 
   Future<void> _openPicker(BuildContext context) async {
-    final picked = await showDatePicker(
+    showDatePicker(
       context: context,
       initialDate: selectedDate,
       firstDate: firstDate,
       lastDate: lastDate,
-    );
-    if (picked != null) onDatePicked(picked);
+    ).then((picked) {
+      if (picked != null) {
+        onDatePicked(picked);
+      }
+    });
   }
 
   @override
   Widget build(BuildContext context) {
+    final formattedDate =
+        "${selectedDate.day}/${selectedDate.month}/${selectedDate.year}";
+
     return GestureDetector(
       onTap: () => _openPicker(context),
-      child: AbsorbPointer(
-        child: TextFormField(
-          decoration: const InputDecoration(
-            labelText: "Expense Date",
-            border: OutlineInputBorder(),
-            prefixIcon: Icon(Icons.calendar_today),
-          ),
-          controller: TextEditingController(
-            text: "${selectedDate.day}/${selectedDate.month}/${selectedDate.year}",
-          ),
+      child: TextFormField(
+        readOnly: true,
+        decoration: const InputDecoration(
+          labelText: "Expense Date",
+          border: OutlineInputBorder(),
+          prefixIcon: Icon(Icons.calendar_today),
         ),
+        controller: TextEditingController(text: formattedDate),
       ),
     );
   }

@@ -19,6 +19,14 @@ class _StaffManageScreenState extends State<StaffManageScreen> {
   String? editId;
 
   @override
+  void initState() {
+    super.initState();
+    // Load staffs from Firestore in real-time
+    final staffProvider = Provider.of<StaffProvider>(context, listen: false);
+    staffProvider.loadStaffsFromFirestore();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final staffProvider = Provider.of<StaffProvider>(context);
 
@@ -29,8 +37,9 @@ class _StaffManageScreenState extends State<StaffManageScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            PageTitleWidget( title: "Staff Management"),
+            const PageTitleWidget(title: "Staff Management"),
             const SizedBox(height: 16),
+
             // Add/Edit Staff Name & Salary
             Card(
               elevation: 4,
@@ -58,16 +67,17 @@ class _StaffManageScreenState extends State<StaffManageScreen> {
                     ),
                     const SizedBox(height: 12),
                     ElevatedButton.icon(
-                      onPressed: () {
+                      onPressed: () async {
                         final name = nameController.text.trim();
-                        final salary =
-                            double.tryParse(salaryController.text) ?? 0;
+                        final salary = double.tryParse(salaryController.text) ?? 0;
                         if (name.isEmpty || salary <= 0) return;
 
                         if (editId == null) {
-                          staffProvider.addStaff(name, salary);
+                          // Add staff to Firestore
+                          await staffProvider.addStaff(name: name, salary: salary);
                         } else {
-                          staffProvider.editStaff(editId!, name, salary);
+                          // Update staff in Firestore
+                          await staffProvider.editStaff(editId!, name, salary);
                           editId = null;
                         }
 
@@ -87,9 +97,11 @@ class _StaffManageScreenState extends State<StaffManageScreen> {
             ),
             const SizedBox(height: 20),
 
-            // Staff List with salary and pending salary
+            // Staff List
             Expanded(
-              child: ListView.builder(
+              child: staffProvider.staffs.isEmpty
+                  ? const Center(child: Text("No Staff Found"))
+                  : ListView.builder(
                 itemCount: staffProvider.staffs.length,
                 itemBuilder: (context, index) {
                   final StaffModel s = staffProvider.staffs[index];
@@ -111,11 +123,13 @@ class _StaffManageScreenState extends State<StaffManageScreen> {
                           children: [
                             Text(
                               "Salary: AED${s.salary.toStringAsFixed(2)}",
-                              style: const TextStyle(color: Colors.deepPurple),
+                              style:
+                              const TextStyle(color: Colors.deepPurple),
                             ),
                             Text(
                               "Pending: AED${s.pendingSalary.toStringAsFixed(2)}",
-                              style: const TextStyle(color: Colors.redAccent),
+                              style:
+                              const TextStyle(color: Colors.redAccent),
                             ),
                           ],
                         ),
@@ -123,7 +137,7 @@ class _StaffManageScreenState extends State<StaffManageScreen> {
                       trailing: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          // Edit Name & Salary
+                          // Edit
                           IconButton(
                             icon: const Icon(Icons.edit, color: Colors.blue),
                             onPressed: () {
@@ -137,11 +151,12 @@ class _StaffManageScreenState extends State<StaffManageScreen> {
                             icon: const Icon(Icons.delete, color: Colors.red),
                             onPressed: () => ConfirmDeleteDialogWidget.show(
                               context,
-                                name: s.name,
-                                description: "Are you sure you want to delete this staff?",
-                                onDelete: () {
-                              staffProvider.deleteStaff(s.id);
-                            },
+                              name: s.name,
+                              description:
+                              "Are you sure you want to delete this staff?",
+                              onDelete: () async {
+                                await staffProvider.deleteStaff(s.id);
+                              },
                             ),
                           ),
                         ],
@@ -157,4 +172,3 @@ class _StaffManageScreenState extends State<StaffManageScreen> {
     );
   }
 }
-

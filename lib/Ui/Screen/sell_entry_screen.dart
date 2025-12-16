@@ -17,12 +17,23 @@ class _SellEntryScreenState extends State<SellEntryScreen> {
   DateTime selectedDate = DateTime.now();
 
   @override
+  void initState() {
+    // TODO: implement initState
+    final sellProvider = Provider.of<SellProvider>(context, listen: false);
+    sellProvider.loadSellOnStart();
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Consumer<SellProvider>(
       builder: (context, provider, child) {
         final sellForSelectedDate = provider.getSellByDate(selectedDate);
+
+        // Auto-fill controller if sell exists
         if (sellForSelectedDate != null &&
-            _sellController.text != sellForSelectedDate.amount.toStringAsFixed(2)) {
+            _sellController.text !=
+                sellForSelectedDate.amount.toStringAsFixed(2)) {
           _sellController.text = sellForSelectedDate.amount.toStringAsFixed(2);
         }
 
@@ -58,12 +69,20 @@ class _SellEntryScreenState extends State<SellEntryScreen> {
                               children: [
                                 // Date Picker
                                 InkWell(
-                                  onTap: () => DatePickerWidget(selectedDate: selectedDate,  onDatePicked: (date) {
-                                    setState(() {
-                                      selectedDate = date;
-                                    });
-                                  }
-                                  ),
+                                  onTap: () async {
+                                    final picked = await showDatePicker(
+                                      context: context,
+                                      initialDate: selectedDate,
+                                      firstDate: DateTime(2024, 1),
+                                      lastDate: DateTime(2100),
+                                    );
+
+                                    if (picked != null) {
+                                      setState(() {
+                                        selectedDate = picked;
+                                      });
+                                    }
+                                  },
                                   child: InputDecorator(
                                     decoration: const InputDecoration(
                                       labelText: "Select Date",
@@ -71,8 +90,7 @@ class _SellEntryScreenState extends State<SellEntryScreen> {
                                       border: OutlineInputBorder(),
                                     ),
                                     child: Row(
-                                      mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                       children: [
                                         Text(
                                           "${selectedDate.day}/${selectedDate.month}/${selectedDate.year}",
@@ -103,16 +121,23 @@ class _SellEntryScreenState extends State<SellEntryScreen> {
                                     final value =
                                     double.tryParse(_sellController.text);
                                     if (value != null && value >= 0) {
-                                      provider.addOrUpdateSellForDate(
-                                          selectedDate, value);
-                                      ScaffoldMessenger.of(context)
-                                          .showSnackBar(
+                                      // <-- FIXED FUNCTION NAME
+                                      provider.addOrUpdateSell(selectedDate, value);
+
+                                      ScaffoldMessenger.of(context).showSnackBar(
                                         SnackBar(
                                           content: Text(
                                               "Sell Saved for ${selectedDate.day}/${selectedDate.month}/${selectedDate.year}"),
                                         ),
                                       );
+
                                       _sellController.clear();
+                                    } else {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        const SnackBar(
+                                          content: Text("Enter a valid sell amount!"),
+                                        ),
+                                      );
                                     }
                                   },
                                   icon: const Icon(Icons.save),
@@ -121,7 +146,8 @@ class _SellEntryScreenState extends State<SellEntryScreen> {
                                     backgroundColor: Colors.greenAccent,
                                     minimumSize: const Size(double.infinity, 50),
                                     shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(10)),
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
                                   ),
                                 ),
                               ],
@@ -129,6 +155,8 @@ class _SellEntryScreenState extends State<SellEntryScreen> {
                           ),
                         ),
                         const SizedBox(height: 20),
+
+                        // View Sells Summary Button
                         ElevatedButton.icon(
                           onPressed: () {
                             Navigator.push(
@@ -146,7 +174,7 @@ class _SellEntryScreenState extends State<SellEntryScreen> {
                         ),
                         const SizedBox(height: 20),
 
-                        // Daily Summary
+                        // Daily Summary Card
                         if (todaySell != null)
                           Card(
                             elevation: 4,
@@ -183,13 +211,11 @@ class _SellEntryScreenState extends State<SellEntryScreen> {
                                 ],
                               ),
                             ),
-                          ), // padding for bottom button
+                          ),
                       ],
                     ),
                   ),
                 ),
-
-                // Fixed Monthly Sell Button at bottom
               ],
             ),
           ),
@@ -197,9 +223,10 @@ class _SellEntryScreenState extends State<SellEntryScreen> {
       },
     );
   }
+
   @override
   void dispose() {
     _sellController.dispose();
     super.dispose();
-    }
+  }
 }

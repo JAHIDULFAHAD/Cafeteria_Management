@@ -2,8 +2,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:email_validator/email_validator.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:rukin_cafeteria/Ui/Screen/verify_email_screen.dart';
 import 'login_screen.dart';
-
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -24,18 +25,17 @@ class _SignupScreenState extends State<SignupScreen> {
   bool _isPasswordVisible = false;
   bool _signupLoading = false;
 
-
   Future<void> _signup() async {
     if (_formKey.currentState!.validate()) {
       setState(() => _signupLoading = true);
       FirebaseAuth auth = FirebaseAuth.instance;
 
       try {
-        UserCredential userCredential =
-            await FirebaseAuth.instance.createUserWithEmailAndPassword(
-          email: _emailController.text.trim(),
-          password: _passwordController.text.trim(),
-        );
+        UserCredential userCredential = await FirebaseAuth.instance
+            .createUserWithEmailAndPassword(
+              email: _emailController.text.trim(),
+              password: _passwordController.text.trim(),
+            );
 
         String uid = userCredential.user!.uid;
 
@@ -48,36 +48,48 @@ class _SignupScreenState extends State<SignupScreen> {
           'createdAt': FieldValue.serverTimestamp(),
         });
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Signup successful! Please login.")),
+        Fluttertoast.showToast(
+          msg: "Signup successful! Please verify your email.",
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
         );
 
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (_) => LoginScreen()),
+          MaterialPageRoute(builder: (_) => VerifyEmailScreen()),
         );
-
       } on FirebaseAuthException catch (e) {
         if (e.code == 'weak-password') {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text("The password provided is too weak."),));
+          Fluttertoast.showToast(
+            msg: "The password provided is too weak.",
+            toastLength: Toast.LENGTH_SHORT,
+            gravity: ToastGravity.BOTTOM,
+          );
         } else if (e.code == 'email-already-in-use') {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text("The account already exists for that email."),));
+          Fluttertoast.showToast(
+            msg: "The account already exists for that email.",
+            toastLength: Toast.LENGTH_SHORT,
+            gravity: ToastGravity.BOTTOM,
+          );
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text("Error: $e")),
+          Fluttertoast.showToast(
+            msg: "Error: ${e.message}",
+            toastLength: Toast.LENGTH_SHORT,
+            gravity: ToastGravity.BOTTOM,
           );
         }
         setState(() => _signupLoading = false);
-      }
-      catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Error: $e")),
+      } catch (e) {
+        Fluttertoast.showToast(
+          msg: "Error: $e",
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
         );
         setState(() => _signupLoading = false);
+      } finally {
+        setState(() => _signupLoading = false);
       }
-      }
+    }
   }
 
   @override
@@ -160,8 +172,9 @@ class _SignupScreenState extends State<SignupScreen> {
                             borderSide: BorderSide.none,
                           ),
                         ),
-                        validator: (value) =>
-                        value == null || value.isEmpty ? "Enter your name" : null,
+                        validator: (value) => value == null || value.isEmpty
+                            ? "Enter your name"
+                            : null,
                       ),
                       const SizedBox(height: 16),
 
@@ -204,8 +217,9 @@ class _SignupScreenState extends State<SignupScreen> {
                             borderSide: BorderSide.none,
                           ),
                         ),
-                        validator: (value) =>
-                        value == null || value.isEmpty ? "Enter phone number" : null,
+                        validator: (value) => value == null || value.isEmpty
+                            ? "Enter phone number"
+                            : null,
                       ),
                       const SizedBox(height: 16),
 
@@ -222,8 +236,9 @@ class _SignupScreenState extends State<SignupScreen> {
                             borderSide: BorderSide.none,
                           ),
                         ),
-                        validator: (value) =>
-                        value == null || value.isEmpty ? "Enter cafeteria name" : null,
+                        validator: (value) => value == null || value.isEmpty
+                            ? "Enter cafeteria name"
+                            : null,
                       ),
                       const SizedBox(height: 16),
 
@@ -240,8 +255,9 @@ class _SignupScreenState extends State<SignupScreen> {
                             borderSide: BorderSide.none,
                           ),
                         ),
-                        validator: (value) =>
-                        value == null || value.isEmpty ? "Enter location" : null,
+                        validator: (value) => value == null || value.isEmpty
+                            ? "Enter location"
+                            : null,
                       ),
                       const SizedBox(height: 16),
 
@@ -319,7 +335,8 @@ class _SignupScreenState extends State<SignupScreen> {
                           Navigator.pushReplacement(
                             context,
                             MaterialPageRoute(
-                                builder: (context) => const LoginScreen()),
+                              builder: (context) => const LoginScreen(),
+                            ),
                           );
                         },
                         child: const Text(

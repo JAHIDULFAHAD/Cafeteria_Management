@@ -1,9 +1,10 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:email_validator/email_validator.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 import 'login_screen.dart';
-
 
 class ForgetPasswordScreen extends StatefulWidget {
   const ForgetPasswordScreen({super.key});
@@ -21,33 +22,50 @@ class _ForgetPasswordScreenState extends State<ForgetPasswordScreen> {
     if (_formKey.currentState!.validate()) {
       setState(() => _forgetPasswordLoading = true);
       try {
+        final userData = await FirebaseFirestore.instance
+            .collection("users")
+            .where("email", isEqualTo: _emailController.text.trim())
+            .get();
+
+        if (userData.docs.isEmpty) {
+          Fluttertoast.showToast(msg: "No user found for that email.",toastLength: Toast.LENGTH_SHORT,
+            gravity: ToastGravity.BOTTOM,);
+          setState(() => _forgetPasswordLoading = false);
+          return;
+        }
         await FirebaseAuth.instance.sendPasswordResetEmail(
           email: _emailController.text.trim(),
         );
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Password reset link sent")),
+        Fluttertoast.showToast(
+          msg: "Password reset link sent! Check your email.",
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
         );
-       Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => const LoginScreen()), (route) => false);
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => const LoginScreen()),
+          (route) => false,
+        );
       } on FirebaseAuthException catch (e) {
         if (e.code == 'user-not-found') {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("No user found for that email")),
+          Fluttertoast.showToast(
+            msg: "No user found for that email.",
+            toastLength: Toast.LENGTH_SHORT,
+            gravity: ToastGravity.BOTTOM,
           );
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(e.toString())),
+          Fluttertoast.showToast(
+            msg: "Error: ${e.message}",
+            toastLength: Toast.LENGTH_SHORT,
+            gravity: ToastGravity.BOTTOM,
           );
         }
         setState(() => _forgetPasswordLoading = false);
       } finally {
         setState(() => _forgetPasswordLoading = false);
-        if (_forgetPasswordLoading == false) {
-          Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => const LoginScreen()), (route) => false);
-        }
       }
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -172,6 +190,22 @@ class _ForgetPasswordScreenState extends State<ForgetPasswordScreen> {
                           ),
                         ),
                       ),
+                      const SizedBox(height: 16),
+
+                      TextButton(
+                        onPressed: () {
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const LoginScreen(),
+                            ),
+                          );
+                        },
+                        child: const Text(
+                          "Already have an account? Login",
+                          style: TextStyle(color: Colors.green),
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -182,6 +216,7 @@ class _ForgetPasswordScreenState extends State<ForgetPasswordScreen> {
       ),
     );
   }
+
   dispose() {
     _emailController.dispose();
     super.dispose();

@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../Data/Model/dashboard_model.dart';
 import 'expense_provider.dart';
 import 'sell_provider.dart';
@@ -24,47 +25,49 @@ class DashboardProvider extends ChangeNotifier {
     );
 
     // Listen to provider changes
-    sellProvider.addListener(calculateDashboard);
-    purchaseProvider.addListener(calculateDashboard);
-    expenseProvider.addListener(calculateDashboard);
+    sellProvider.addListener(_calculateDashboard);
+    purchaseProvider.addListener(_calculateDashboard);
+    expenseProvider.addListener(_calculateDashboard);
 
-    calculateDashboard();
+    // Initial calculation
+    _calculateDashboard();
   }
 
+  // Public getters
   double get todayNetCash => _dashboard.todayIncome;
   double get monthlyNetCash => _dashboard.monthIncome;
   double get monthlyTotalSells => _dashboard.yearIncome;
   double get monthlyTotalPurchases => _dashboard.monthlyTotalPurchases.toDouble();
 
-  /// Calculate dashboard values
-  void calculateDashboard({int? year, int? month}) {
+  /// 🔹 Recalculate all dashboard values
+  void _calculateDashboard({int? year, int? month}) {
     final now = DateTime.now();
-    final currentYear = year ?? now.year;
-    final currentMonth = month ?? now.month;
+    final y = year ?? now.year;
+    final m = month ?? now.month;
 
-    // ✅ Today Net Cash (already includes purchases & expenses in SellProvider)
-    _dashboard.todayIncome = sellProvider.todaySell?.netCash ?? 0.0;
+    // Today Net Cash
+    final todaySell = sellProvider.getSellByDate(now);
+    _dashboard.todayIncome = todaySell?.netCash ?? 0.0;
 
-    // ✅ Monthly Total Sells
-    final monthSells = sellProvider.getMonthlyTotalSell(currentMonth, currentYear);
-    _dashboard.yearIncome = monthSells;
+    // Monthly Total Sells
+    final totalSells = sellProvider.getMonthlyTotalSell(m, y);
+    _dashboard.yearIncome = totalSells;
 
-    // ✅ Monthly Total Expenses
-    final monthExpenses = expenseProvider.getMonthlyTotalExpense(currentYear, currentMonth);
+    // Monthly Total Purchases
+    final totalPurchases = purchaseProvider.getMonthlyTotal(y, m);
+    _dashboard.monthlyTotalPurchases = totalPurchases.toDouble();
 
+    // Monthly Total Expenses
+    final totalExpenses = expenseProvider.getMonthlyTotalExpense(y, m);
 
-    // ✅ Monthly Total Purchases
-    final monthPurchases = purchaseProvider.getMonthlyTotal(currentYear, currentMonth);
-    _dashboard.monthlyTotalPurchases = monthPurchases;
-
-    // ✅ Monthly Net Cash = total sells - total expenses
-    _dashboard.monthIncome = monthSells - (monthExpenses + monthPurchases);
+    // Monthly Net Cash = total sells - (expenses + purchases)
+    _dashboard.monthIncome = totalSells - (totalPurchases + totalExpenses);
 
     notifyListeners();
   }
 
-  /// Force refresh dashboard manually
+  /// 🔹 Force refresh manually
   void refreshDashboard() {
-    calculateDashboard();
+    _calculateDashboard();
   }
 }

@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rukin_cafeteria/Ui/Widget/confirm_delete_dialog_widget.dart';
@@ -5,6 +6,7 @@ import 'package:rukin_cafeteria/Ui/Widget/date_picker_widget.dart';
 import '../../Data/Model/staff_model.dart';
 import '../Provider/expense_provider.dart';
 import '../Provider/staff_provider.dart';
+import '../Provider/sell_provider.dart';
 import '../Widget/Page_Title_widget.dart';
 import '../Widget/item_list_card_widget.dart';
 import '../Widget/total_card_widget.dart';
@@ -23,7 +25,7 @@ class _ExpenseEntryScreenState extends State<ExpenseEntryScreen> {
 
   String? selectedTitle;
   StaffModel? selectedStaff;
-  int? editIndex;
+  String? editId; // Firestore doc ID
   DateTime selectedDate = DateTime.now();
 
   final List<String> expenseTitles = [
@@ -35,11 +37,22 @@ class _ExpenseEntryScreenState extends State<ExpenseEntryScreen> {
   ];
 
   @override
+  void initState() {
+    super.initState();
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid != null) {
+      Provider.of<ExpenseProvider>(context, listen: false).init(uid);
+      Provider.of<StaffProvider>(context, listen: false).loadStaffsFromFirestore();
+      Provider.of<SellProvider>(context, listen: false).loadSellOnStart();
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     final expenseProvider = Provider.of<ExpenseProvider>(context);
     final staffProvider = Provider.of<StaffProvider>(context);
 
-    // 🔹 Expenses for selected date
+    // Filter expenses for the selected date
     final expensesForSelectedDate = expenseProvider.expenses
         .where((e) =>
     e.date.year == selectedDate.year &&
@@ -59,15 +72,16 @@ class _ExpenseEntryScreenState extends State<ExpenseEntryScreen> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               PageTitleWidget(
-                  title:
-                  "Expense Input - (${selectedDate.day}/${selectedDate.month}/${selectedDate.year})"),
+                title:
+                "Expense Input - (${selectedDate.day}/${selectedDate.month}/${selectedDate.year})",
+              ),
               const SizedBox(height: 16),
 
-              // 🔹 Expense Form
               Expanded(
                 child: SingleChildScrollView(
                   child: Column(
                     children: [
+                      // Form Card
                       Card(
                         elevation: 4,
                         child: Padding(
@@ -78,15 +92,22 @@ class _ExpenseEntryScreenState extends State<ExpenseEntryScreen> {
                               children: [
                                 // Date Picker
                                 InkWell(
-                                  onTap: () => DatePickerWidget(selectedDate: selectedDate,  onDatePicked: (date) {
-                                    setState(() {
-                                      selectedDate = date;
-                                    });
-                                  }
-                                  ),
+                                  onTap: () async {
+                                    final picked = await showDatePicker(
+                                      context: context,
+                                      initialDate: selectedDate,
+                                      firstDate: DateTime(2024, 1),
+                                      lastDate: DateTime(2100),
+                                    );
+                                    if (picked != null) {
+                                      setState(() {
+                                        selectedDate = picked;
+                                      });
+                                    }
+                                  },
                                   child: InputDecorator(
                                     decoration: const InputDecoration(
-                                      labelText: "Expense Date",
+                                      labelText: "Select Date",
                                       prefixIcon: Icon(Icons.date_range),
                                       border: OutlineInputBorder(),
                                     ),
@@ -113,10 +134,12 @@ class _ExpenseEntryScreenState extends State<ExpenseEntryScreen> {
                                     prefixIcon: Icon(Icons.title),
                                   ),
                                   items: expenseTitles
-                                      .map((e) => DropdownMenuItem(
-                                    value: e,
-                                    child: Text(e),
-                                  ))
+                                      .map(
+                                        (e) => DropdownMenuItem(
+                                      value: e,
+                                      child: Text(e),
+                                    ),
+                                  )
                                       .toList(),
                                   onChanged: (val) {
                                     setState(() {
@@ -140,11 +163,13 @@ class _ExpenseEntryScreenState extends State<ExpenseEntryScreen> {
                                       prefixIcon: Icon(Icons.person),
                                     ),
                                     items: staffProvider.staffs
-                                        .map((staff) => DropdownMenuItem(
-                                      value: staff,
-                                      child: Text(
-                                          "${staff.name} (AED${staff.salary.toStringAsFixed(0)})"),
-                                    ))
+                                        .map(
+                                          (staff) => DropdownMenuItem(
+                                        value: staff,
+                                        child: Text(
+                                            "${staff.name} (AED${staff.salary.toStringAsFixed(0)})"),
+                                      ),
+                                    )
                                         .toList(),
                                     onChanged: (val) {
                                       setState(() {
@@ -183,61 +208,35 @@ class _ExpenseEntryScreenState extends State<ExpenseEntryScreen> {
 
                                 // Add / Update Button
                                 ElevatedButton.icon(
-                                  onPressed: () {
+                                  onPressed: () async {
                                     if (_formKey.currentState!.validate()) {
                                       double enteredAmount =
                                       double.parse(amountController.text);
+                                      String title = selectedTitle!;
 
-                                      if (editIndex == null) {
-                                        // Add Expense
-                                        if (selectedTitle == 'Salary' &&
-                                            selectedStaff != null) {
-                                          double diff = enteredAmount -
-                                              selectedStaff!.salary;
-                                          if (diff > 0) {
-                                            selectedStaff!.pendingSalary =
-                                                (selectedStaff!.pendingSalary -
-                                                    diff)
-                                                    .clamp(0, double.infinity);
-                                          } else if (diff < 0) {
-                                            selectedStaff!.pendingSalary +=
-                                            (-diff);
-                                          }
-                                          expenseProvider.addExpense(
-                                              title:
-                                              "Salary - ${selectedStaff!.name}",
-                                              amount: enteredAmount,
-                                              date: selectedDate);
-                                        } else {
-                                          expenseProvider.addExpense(
-                                              title: selectedTitle ?? 'Other',
-                                              amount: enteredAmount,
-                                              date: selectedDate);
-                                        }
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(
-                                          const SnackBar(
-                                              content: Text(
-                                                  "Expense saved successfully ✅")),
+                                      if (title == 'Staff Salary' &&
+                                          selectedStaff != null) {
+                                        title = "Salary - ${selectedStaff!.name}";
+                                        await staffProvider.paySalary(
+                                            selectedStaff!.id, enteredAmount);
+                                      }
+
+                                      if (editId == null) {
+                                        await expenseProvider.addExpense(
+                                          title: title,
+                                          amount: enteredAmount,
+                                          date: selectedDate,
                                         );
                                       } else {
-                                        // Edit Expense
-                                        expenseProvider.editExpense(
-                                          index: editIndex!,
-                                          newTitle: selectedTitle!,
+                                        await expenseProvider.editExpense(
+                                          id: editId!,
+                                          newTitle: title,
                                           newAmount: enteredAmount,
                                           newDate: selectedDate,
                                         );
-                                        editIndex = null;
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(
-                                          const SnackBar(
-                                              content: Text(
-                                                  "Expense updated successfully ✅")),
-                                        );
+                                        editId = null;
                                       }
 
-                                      // Reset Form fields BUT keep selectedDate
                                       setState(() {
                                         selectedTitle = null;
                                         selectedStaff = null;
@@ -245,18 +244,16 @@ class _ExpenseEntryScreenState extends State<ExpenseEntryScreen> {
                                       });
                                     }
                                   },
-                                  icon: Icon(editIndex == null
-                                      ? Icons.add
-                                      : Icons.check_circle_outline),
-                                  label: Text(editIndex == null
+                                  icon: Icon(
+                                      editId == null ? Icons.add : Icons.check),
+                                  label: Text(editId == null
                                       ? "Add Expense"
                                       : "Update Expense"),
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: Colors.greenAccent,
                                     minimumSize: const Size(double.infinity, 50),
                                     shape: RoundedRectangleBorder(
-                                        borderRadius:
-                                        BorderRadius.circular(10)),
+                                        borderRadius: BorderRadius.circular(10)),
                                   ),
                                 ),
                               ],
@@ -266,7 +263,7 @@ class _ExpenseEntryScreenState extends State<ExpenseEntryScreen> {
                       ),
                       const SizedBox(height: 20),
 
-                      // Monthly Expense Button
+                      // Expense Summary Button
                       ElevatedButton.icon(
                         onPressed: () {
                           Navigator.push(
@@ -286,15 +283,21 @@ class _ExpenseEntryScreenState extends State<ExpenseEntryScreen> {
                       ),
                       const SizedBox(height: 20),
 
-                      // Selected Date Total
-                      TotalCardWidget(
-                        total: totalForSelectedDate,
-                        title:
-                        "Total Expense - (${selectedDate.day}/${selectedDate.month}/${selectedDate.year})",
+                      // Total Card with live netCash
+                      Consumer<SellProvider>(
+                        builder: (context, sellProvider, _) {
+                          final sell = sellProvider.getSellByDate(selectedDate);
+                          final netCash = sell?.netCash ?? 0.0;
+                          return TotalCardWidget(
+                            total: totalForSelectedDate,
+                            title:
+                            "Total Expense - (${selectedDate.day}/${selectedDate.month}/${selectedDate.year})\nNet Cash: \$${netCash.toStringAsFixed(2)}",
+                          );
+                        },
                       ),
                       const SizedBox(height: 10),
 
-                      // Expense List with fixed height
+                      // Expense List
                       SizedBox(
                         height: MediaQuery.of(context).size.height * 0.4,
                         child: ItemListCard(
@@ -304,20 +307,17 @@ class _ExpenseEntryScreenState extends State<ExpenseEntryScreen> {
                           title: (e) => Text(e.title,
                               style:
                               const TextStyle(fontWeight: FontWeight.bold)),
-                          subtitle: (e) => Text(
-                              e.amount.toStringAsFixed(2),
-                              style: const TextStyle(
-                                  color: Colors.green,
-                              ),),
+                          subtitle: (e) => Text(e.amount.toStringAsFixed(2),
+                              style: const TextStyle(color: Colors.green)),
                           onEdit: (e, index) {
                             setState(() {
                               selectedTitle = e.title.contains("Salary")
-                                  ? "Salary"
+                                  ? "Staff Salary"
                                   : e.title;
-                              amountController.text = e.amount.toStringAsFixed(2);
+                              amountController.text =
+                                  e.amount.toStringAsFixed(2);
                               selectedDate = e.date;
-                              editIndex =
-                                  expenseProvider.expenses.indexOf(e);
+                              editId = e.id;
                             });
                           },
                           onDelete: (e, index) {
@@ -326,10 +326,11 @@ class _ExpenseEntryScreenState extends State<ExpenseEntryScreen> {
                               name: e.title,
                               description:
                               "Are you sure you want to delete this expense?",
-                              onDelete: () {
-                                expenseProvider.deleteExpense(index);
-                              },);
-                          }
+                              onDelete: () async {
+                                await expenseProvider.deleteExpense(e.id);
+                              },
+                            );
+                          },
                         ),
                       ),
                     ],
@@ -341,5 +342,11 @@ class _ExpenseEntryScreenState extends State<ExpenseEntryScreen> {
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    amountController.dispose();
+    super.dispose();
   }
 }

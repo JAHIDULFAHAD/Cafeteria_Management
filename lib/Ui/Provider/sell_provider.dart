@@ -1,60 +1,110 @@
-import 'package:flutter/foundation.dart';
+import 'dart:async';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
+import '../../Data/Model/sell_model.dart';
 import '../../Data/Model/purchase_model.dart';
 import '../../Data/Model/expense_model.dart';
-import '../../Data/Model/sell_model.dart';
 
 class SellProvider with ChangeNotifier {
   final List<SellModel> _sells = [];
+  List<SellModel> get sells => List.unmodifiable(_sells);
+
   final List<PurchaseModel> _purchases = [];
   final List<ExpenseModel> _expenses = [];
 
-  List<SellModel> get sells => _sells;
+  StreamSubscription<QuerySnapshot>? _sellSubscription;
 
-  // Update Purchases
-  void updatePurchases(List<PurchaseModel> newPurchases) {
-    _purchases
-      ..clear()
-      ..addAll(newPurchases);
-    _recalculateAllNetCash();
+  /// 🔹 Load sells from cache first, then start realtime listener
+  Future<void> loadSellOnStart() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    // Load from cache
+    final cacheSnapshot = await FirebaseFirestore.instance
+        .collection("sells")
+        .where("uid", isEqualTo: user.uid)
+        .get(const GetOptions(source: Source.cache));
+
+    if (cacheSnapshot.docs.isNotEmpty) {
+      _sells
+        ..clear()
+        ..addAll(cacheSnapshot.docs
+            .map((d) => SellModel.fromDoc(d.id, d.data())));
+      notifyListeners();
+    }
+
+    // Start realtime listener
+    _initRealtimeListener(user.uid);
   }
 
-  // Update Expenses
-  void updateExpenses(List<ExpenseModel> newExpenses) {
-    _expenses
-      ..clear()
-      ..addAll(newExpenses);
-    _recalculateAllNetCash();
+  void _initRealtimeListener(String uid) {
+    _sellSubscription?.cancel();
+
+    _sellSubscription = FirebaseFirestore.instance
+        .collection("sells")
+        .where("uid", isEqualTo: uid)
+        .snapshots()
+        .listen((snapshot) async {
+      _sells
+        ..clear()
+        ..addAll(snapshot.docs.map((d) => SellModel.fromDoc(d.id, d.data())));
+
+      // Recalculate netCash based on current purchases/expenses
+      await _recalculateAllNetCash();
+      notifyListeners();
+    });
   }
 
-  // Add or Update Sell for a specific date
-  void addOrUpdateSellForDate(DateTime date, double sellAmount) {
+  /// 🔹 Add or update sell
+  Future<void> addOrUpdateSell(DateTime date, double amount) async {
+    final uid = FirebaseAuth.instance.currentUser!.uid;
+
+    // Find existing sell
     final index = _sells.indexWhere((s) =>
-    s.date.year == date.year &&
+    s.uid == uid &&
+        s.date.year == date.year &&
         s.date.month == date.month &&
         s.date.day == date.day);
 
-    double netCash =
-        sellAmount - (_getPurchaseTotalByDate(date) + _getExpenseTotalByDate(date));
+    SellModel sell;
+    final docId = "${uid}_${date.year}-${date.month}-${date.day}";
 
     if (index != -1) {
-      _sells[index].amount = sellAmount;
-      _sells[index].netCash = netCash;
+      // Update existing
+      sell = _sells[index];
+      sell.amount = amount;
     } else {
-      _sells.add(SellModel(date: date, amount: sellAmount, netCash: netCash));
+      // Create new
+      sell = SellModel(
+        id: docId,
+        uid: uid,
+        date: date,
+        amount: amount,
+        netCash: 0.0, // will recalc below
+      );
+      _sells.add(sell);
     }
+
+    // Calculate netCash
+    sell.netCash = amount - (_getPurchaseTotalByDate(date) + _getExpenseTotalByDate(date));
+
+    // Save to Firestore
+    await FirebaseFirestore.instance
+        .collection("sells")
+        .doc(sell.id)
+        .set(sell.toMap(), SetOptions(merge: true));
 
     notifyListeners();
   }
 
-  // Today Sell
-  void addOrUpdateTodaySell(double sellAmount) {
-    addOrUpdateSellForDate(DateTime.now(), sellAmount);
-  }
-
+  /// 🔹 Get sell by date
   SellModel? getSellByDate(DateTime date) {
+    final uid = FirebaseAuth.instance.currentUser!.uid;
     try {
       return _sells.firstWhere((s) =>
-      s.date.year == date.year &&
+      s.uid == uid &&
+          s.date.year == date.year &&
           s.date.month == date.month &&
           s.date.day == date.day);
     } catch (_) {
@@ -62,23 +112,22 @@ class SellProvider with ChangeNotifier {
     }
   }
 
-  SellModel? get todaySell => getSellByDate(DateTime.now());
-
-  // Monthly Sell List
+  /// 🔹 Monthly sells
   List<SellModel> getMonthlySellList(int month, int year) {
+    final uid = FirebaseAuth.instance.currentUser!.uid;
     return _sells
-        .where((s) => s.date.year == year && s.date.month == month)
+        .where((s) => s.uid == uid && s.date.month == month && s.date.year == year)
         .toList();
   }
 
-  // Monthly Total Sell
   double getMonthlyTotalSell(int month, int year) {
+    final uid = FirebaseAuth.instance.currentUser!.uid;
     return _sells
-        .where((s) => s.date.year == year && s.date.month == month)
+        .where((s) => s.uid == uid && s.date.month == month && s.date.year == year)
         .fold(0.0, (sum, s) => sum + s.amount);
   }
 
-  // Private Helpers
+  /// 🔹 Purchase & expense helpers
   double _getPurchaseTotalByDate(DateTime date) {
     return _purchases
         .where((p) =>
@@ -97,11 +146,45 @@ class SellProvider with ChangeNotifier {
         .fold(0.0, (sum, e) => sum + e.amount);
   }
 
-  void _recalculateAllNetCash() {
+  /// 🔹 Update purchases or expenses & recalc netCash
+  Future<void> updatePurchases(List<PurchaseModel> newPurchases) async {
+    _purchases
+      ..clear()
+      ..addAll(newPurchases);
+    await _recalculateAllNetCash();
+  }
+
+  Future<void> updateExpenses(List<ExpenseModel> newExpenses) async {
+    _expenses
+      ..clear()
+      ..addAll(newExpenses);
+    await _recalculateAllNetCash();
+  }
+
+  /// 🔹 Recalculate netCash for all sells and sync with Firestore
+  Future<void> _recalculateAllNetCash() async {
     for (var s in _sells) {
-      s.netCash =
-          s.amount - (_getPurchaseTotalByDate(s.date) + _getExpenseTotalByDate(s.date));
+      s.netCash = s.amount - (_getPurchaseTotalByDate(s.date) + _getExpenseTotalByDate(s.date));
+
+      // Update Firestore
+      await FirebaseFirestore.instance
+          .collection('sells')
+          .doc(s.id)
+          .set(s.toMap(), SetOptions(merge: true));
     }
+  }
+
+  /// 🔹 Clear all data on logout
+  void clearData() {
+    _sells.clear();
+    _sellSubscription?.cancel();
+    _sellSubscription = null;
     notifyListeners();
+  }
+
+  @override
+  void dispose() {
+    _sellSubscription?.cancel();
+    super.dispose();
   }
 }

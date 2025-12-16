@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:provider/provider.dart';
 import 'package:rukin_cafeteria/Ui/Widget/Page_Title_widget.dart';
 import '../../Data/Model/user_model.dart';
@@ -29,6 +30,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
   late TextEditingController _oldPasswordController= TextEditingController();
 
   bool _isPasswordVisible = false;
+  bool _isConfirmPasswordVisible = false;
+  bool _isOldPasswordVisible = false;
   bool _changePasswordLoading = false;
   bool _updateProfileLoading = false;
   bool _userLoading = false;
@@ -53,7 +56,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     final firebaseUser = FirebaseAuth.instance.currentUser;
     if (firebaseUser == null) {
-      print("No logged in user!");
+      Fluttertoast.showToast(
+        msg: "No user found",
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+      );
       setState(() => _userLoading = false);
       return;
     }
@@ -65,12 +72,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
           .get();
 
       if (!doc.exists) {
-        print("User document not found in Firestore");
+        Fluttertoast.showToast(
+          msg: "User Document not found",
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+        );
         setState(() => _userLoading = false);
         return;
       }
 
-      _currentUser = UserModel.fromMap(doc.data()!);
+      _currentUser = UserModel.fromMap(doc);
 
       // Save in provider so it can be reused elsewhere
       await _userProvider!.updateUser(_currentUser!);
@@ -90,8 +101,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Future<void> _updateProfile() async {
     if (!_formKey.currentState!.validate()) return;
     if (_currentUser == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("No user found")),
+      Fluttertoast.showToast(
+        msg: "No user found",
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
       );
       return;
     }
@@ -108,16 +121,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
         location: _locationController.text.trim(),
         createdAt: _currentUser!.createdAt,
       );
-
       // Update provider and Firestore
       await _userProvider!.updateUser(updatedUser);
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Profile updated successfully")),
+      Fluttertoast.showToast(
+        msg: "Profile updated successfully",
+          toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
       );
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Failed to update profile: $e")),
+      Fluttertoast.showToast(
+        msg: "Failed to update profile: $e",
+          toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
       );
     } finally {
       setState(() => _updateProfileLoading = false);
@@ -144,33 +160,43 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
       if (firebaseUser != null) {
         await firebaseUser.updatePassword(newPassword);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Password updated successfully")),
+        Fluttertoast.showToast(
+          msg: "Password updated successfully",
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
         );
       }
-      setState(() => _changePasswordLoading = false);
       _oldPasswordController.clear();
       _passwordController.clear();
       _confirmPasswordController.clear();
       _isPasswordVisible = false;
+      _isConfirmPasswordVisible = false;
+      _isOldPasswordVisible = false;
     }
     on FirebaseAuthException catch (e) {
       if (e.code == 'invalid-credential') {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Your old password is incorrect")),
+        Fluttertoast.showToast(
+          msg: "Invalid old password",
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
         );
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Failed to update password: $e")),
+        Fluttertoast.showToast(
+          msg: "Failed to update password: $e",
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
         );
       }
       setState(() => _changePasswordLoading = false);
-    }
-    catch (e) {
+    } catch (e) {
       setState(() => _changePasswordLoading = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Failed to update password: $e")),
+      Fluttertoast.showToast(
+        msg: "Failed to update password: $e",
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
       );
+    } finally {
+      setState(() => _changePasswordLoading = false);
     }
 
   }
@@ -323,19 +349,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       SizedBox(height: 12),
                       TextFormField(
                         controller: _oldPasswordController,
-                        obscureText: !_isPasswordVisible,
+                        obscureText: !_isOldPasswordVisible,
                         decoration: InputDecoration(
                           labelText: "Old Password",
                           border: const OutlineInputBorder(),
                           suffixIcon: IconButton(
                             icon: Icon(
-                              _isPasswordVisible
+                              _isOldPasswordVisible
                                   ? Icons.visibility
                                   : Icons.visibility_off,
                             ),
                             onPressed: () {
                               setState(() {
-                                _isPasswordVisible = !_isPasswordVisible;
+                                _isOldPasswordVisible = !_isOldPasswordVisible;
                               });
                             },
                           ),
@@ -379,19 +405,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       SizedBox(height: 12),
                       TextFormField(
                           controller: _confirmPasswordController,
-                          obscureText: !_isPasswordVisible,
+                          obscureText: !_isConfirmPasswordVisible,
                           decoration: InputDecoration(
                             labelText: "Confirm Password",
                             border: const OutlineInputBorder(),
                             suffixIcon: IconButton(
                               icon: Icon(
-                                _isPasswordVisible
+                                _isConfirmPasswordVisible
                                     ? Icons.visibility
                                     : Icons.visibility_off,
                               ),
                               onPressed: () {
                                 setState(() {
-                                  _isPasswordVisible = !_isPasswordVisible;
+                                  _isConfirmPasswordVisible = !_isConfirmPasswordVisible;
                                 });
                               },
                             ),
@@ -410,7 +436,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       SizedBox(height: 12),
                       Visibility(
                         visible: _changePasswordLoading == false,
-                        replacement: CircularProgressIndicator(),
+                        replacement: Center(child: CircularProgressIndicator()),
                         child: SizedBox(
                           width: double.infinity,
                           height: 48,
