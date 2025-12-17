@@ -1,27 +1,24 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:rukin_cafeteria/Ui/Screen/purchase_item_manage_screen.dart';
-
-import 'Ui/Provider/dashboard_controller.dart';
-import 'Ui/Provider/item_provider.dart';
-import 'Ui/Provider/meal_provider.dart';
-import 'Ui/Provider/navigation_provider.dart';
-import 'Ui/Provider/purchase_provider.dart';
-import 'Ui/Provider/expense_provider.dart';
-import 'Ui/Provider/sell_provider.dart';
-import 'Ui/Provider/staff_provider.dart';
-import 'Ui/Provider/user_provider.dart';
-import 'Ui/Screen/home_screen.dart';
-import 'Ui/Screen/login_screen.dart';
-
+import 'features/Provider/dashboard_controller.dart';
+import 'features/Provider/expense_provider.dart';
+import 'features/Provider/meal_provider.dart';
+import 'features/Provider/navigation_provider.dart';
+import 'features/purchase/presentation/data/item_provider.dart';
+import 'features/purchase/presentation/data/purchase_provider.dart';
+import 'features/sell/presentation/data/sell_provider.dart';
+import 'features/Provider/staff_provider.dart';
+import 'features/Provider/user_provider.dart';
+import 'features/Screen/home_screen.dart';
+import 'features/Screen/login_screen.dart';
 class RukinCafeteria extends StatelessWidget {
   const RukinCafeteria({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final sellProvider = SellProvider( ); // Single instance
-    final purchaseProvider = PurchaseProvider(sellProvider: sellProvider);
+    final sellProvider = SellProvider(); // Single instance
+    final purchaseProvider = PurchaseProvider();
     final expenseProvider = ExpenseProvider(sellProvider: sellProvider);
 
     return MultiProvider(
@@ -51,6 +48,10 @@ class RukinCafeteria extends StatelessWidget {
           scaffoldBackgroundColor: Colors.green.shade50,
           elevatedButtonTheme:ElevatedButtonThemeData(
             style: ElevatedButton.styleFrom(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+              textStyle: const TextStyle(fontSize: 16),
               backgroundColor: Colors.greenAccent,
               minimumSize: const Size(double.infinity, 50),
             ),
