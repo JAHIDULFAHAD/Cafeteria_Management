@@ -2,8 +2,8 @@ import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../../Data/Model/expense_model.dart';
-import '../sell/presentation/data/sell_provider.dart';
+import '../../../../Data/Model/expense_model.dart';
+import '../../../sell/presentation/data/sell_provider.dart';
 
 class ExpenseProvider with ChangeNotifier {
   final SellProvider sellProvider;

@@ -1,15 +1,15 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../Data/Model/staff_model.dart';
-import '../Provider/expense_provider.dart';
-import '../Provider/staff_provider.dart';
-import '../sell/presentation/data/sell_provider.dart';
-import '../Widget/Page_Title_widget.dart';
-import '../Widget/confirm_delete_dialog_widget.dart';
-import '../Widget/item_list_card.dart';
-import '../Widget/total_card_widget.dart';
-import 'expence_summary_screen.dart';
+import '../../../../Data/Model/staff_model.dart';
+import '../data/expense_provider.dart';
+import '../../../Provider/staff_provider.dart';
+import '../../../sell/presentation/data/sell_provider.dart';
+import '../../../Widget/Page_Title_widget.dart';
+import '../../../Widget/confirm_delete_dialog_widget.dart';
+import '../../../Widget/item_list_card.dart';
+import '../../../Widget/total_card_widget.dart';
+import 'expense_summary_screen.dart';
 
 class ExpenseEntryScreen extends StatefulWidget {
   const ExpenseEntryScreen({super.key});
@@ -68,7 +68,6 @@ class _ExpenseEntryScreenState extends State<ExpenseEntryScreen> {
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               PageTitleWidget(
                 title:

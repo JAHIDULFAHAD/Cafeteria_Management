@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
-import '../Provider/expense_provider.dart';
+import '../expense/presentation/data/expense_provider.dart';
 import '../sell/presentation/data/sell_provider.dart';
 import '../Widget/Page_Title_widget.dart';
 import '../Widget/appbar_widget.dart';

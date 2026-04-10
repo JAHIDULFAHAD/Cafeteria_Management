@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import '../Provider/expense_provider.dart';
-import '../sell/presentation/data/sell_provider.dart';
-import '../Widget/Page_Title_widget.dart';
-import '../Widget/appbar_widget.dart';
-import '../Widget/show_item_list_dialog.dart';
-import '../Widget/total_card_widget.dart';
+import '../data/expense_provider.dart';
+import '../../../sell/presentation/data/sell_provider.dart';
+import '../../../Widget/Page_Title_widget.dart';
+import '../../../Widget/appbar_widget.dart';
+import '../../../Widget/show_item_list_dialog.dart';
+import '../../../Widget/total_card_widget.dart';
 
 class ExpenseSummaryScreen extends StatefulWidget {
   const ExpenseSummaryScreen({super.key});
