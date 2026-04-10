@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../Data/Model/meal_model.dart';
-import '../Provider/meal_provider.dart';
-import '../Widget/Page_Title_widget.dart';
+import '../../../../Data/Model/meal_model.dart';
+import '../data/meal_provider.dart';
+import '../../../Widget/Page_Title_widget.dart';
 import 'meal_summary_screen.dart';
 
 class MealEntryScreen extends StatefulWidget {

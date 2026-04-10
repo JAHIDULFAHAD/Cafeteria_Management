@@ -1,17 +1,17 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'features/Provider/dashboard_controller.dart';
-import 'features/Provider/expense_provider.dart';
-import 'features/Provider/meal_provider.dart';
+import 'features/dashboard/presentation/data/dashboard_controller.dart';
+import 'features/expense/presentation/data/expense_provider.dart';
+import 'features/meal/presentation/data/meal_provider.dart';
 import 'features/Provider/navigation_provider.dart';
 import 'features/purchase/presentation/data/item_provider.dart';
 import 'features/purchase/presentation/data/purchase_provider.dart';
 import 'features/sell/presentation/data/sell_provider.dart';
-import 'features/Provider/staff_provider.dart';
-import 'features/Provider/user_provider.dart';
-import 'features/Screen/home_screen.dart';
-import 'features/Screen/login_screen.dart';
+import 'features/staff/presentation/data/staff_provider.dart';
+import 'features/auth/presentation/data/user_provider.dart';
+import 'features/home/presentation/screens/home_screen.dart';
+import 'features/auth/presentation/screens/login_screen.dart';
 class RukinCafeteria extends StatelessWidget {
   const RukinCafeteria({super.key});
 

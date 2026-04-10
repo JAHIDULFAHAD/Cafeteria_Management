@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:rukin_cafeteria/features/Screen/staff_manage_screen.dart';
-import '../Provider/dashboard_controller.dart';
-import '../Widget/build_action_button_widget.dart';
-import '../Widget/build_summarycard.dart';
-import '../expense/presentation/screens/expense_summary_screen.dart';
-import '../purchase/presentation/screens/purchase_summary_screen.dart';
-import 'meal_summary_screen.dart';
-import 'net_cash_summary_screen.dart';
-import '../sell/presentation/screens/sell_summary_screen.dart';
+import 'package:rukin_cafeteria/features/staff/presentation/screens/staff_manage_screen.dart';
+import '../data/dashboard_controller.dart';
+import '../../../Widget/build_action_button_widget.dart';
+import '../../../Widget/build_summarycard.dart';
+import '../../../expense/presentation/screens/expense_summary_screen.dart';
+import '../../../purchase/presentation/screens/purchase_summary_screen.dart';
+import '../../../meal/presentation/screens/meal_summary_screen.dart';
+import '../../../sell/presentation/screens/net_cash_summary_screen.dart';
+import '../../../sell/presentation/screens/sell_summary_screen.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});

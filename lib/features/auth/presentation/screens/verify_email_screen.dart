@@ -4,9 +4,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:provider/provider.dart';
-import 'package:rukin_cafeteria/features/Screen/singup_screen.dart';
-import '../Provider/user_provider.dart';
-import 'home_screen.dart';
+import 'package:rukin_cafeteria/features/auth/presentation/screens/singup_screen.dart';
+import '../data/user_provider.dart';
+import '../../../home/presentation/screens/home_screen.dart';
 
 class VerifyEmailScreen extends StatefulWidget {
   const VerifyEmailScreen({super.key});

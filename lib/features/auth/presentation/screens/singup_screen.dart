@@ -3,7 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:email_validator/email_validator.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:rukin_cafeteria/features/Screen/verify_email_screen.dart';
+import 'package:rukin_cafeteria/features/auth/presentation/screens/verify_email_screen.dart';
 import 'login_screen.dart';
 
 class SignupScreen extends StatefulWidget {

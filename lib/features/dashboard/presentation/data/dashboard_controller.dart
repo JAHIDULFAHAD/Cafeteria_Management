@@ -1,8 +1,8 @@
 import 'package:flutter/foundation.dart';
-import '../../Data/Model/dashboard_model.dart';
-import '../expense/presentation/data/expense_provider.dart';
-import '../sell/presentation/data/sell_provider.dart';
-import '../purchase/presentation/data/purchase_provider.dart';
+import '../../../../Data/Model/dashboard_model.dart';
+import '../../../expense/presentation/data/expense_provider.dart';
+import '../../../sell/presentation/data/sell_provider.dart';
+import '../../../purchase/presentation/data/purchase_provider.dart';
 
 class DashboardProvider extends ChangeNotifier {
   late DashboardModel _dashboard;

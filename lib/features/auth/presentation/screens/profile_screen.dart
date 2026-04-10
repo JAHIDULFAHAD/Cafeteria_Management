@@ -3,10 +3,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:provider/provider.dart';
-import '../../Data/Model/user_model.dart';
-import '../Provider/user_provider.dart';
-import '../Widget/Page_Title_widget.dart';
-import '../Widget/appbar_widget.dart';
+import '../../../../Data/Model/user_model.dart';
+import '../data/user_provider.dart';
+import '../../../Widget/Page_Title_widget.dart';
+import '../../../Widget/appbar_widget.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});

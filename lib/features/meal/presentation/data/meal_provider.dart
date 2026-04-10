@@ -1,5 +1,5 @@
 import 'package:flutter/foundation.dart';
-import '../../Data/Model/meal_model.dart';
+import '../../../../Data/Model/meal_model.dart';
 
 class MealProvider with ChangeNotifier {
   final List<MealModel> _bills = [];

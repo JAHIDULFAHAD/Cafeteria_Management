@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
-import '../Provider/meal_provider.dart';
-import '../Widget/Page_Title_widget.dart';
-import '../Widget/add_payment_dialog_widget.dart';
-import '../Widget/appbar_widget.dart';
-import '../Widget/confirm_delete_dialog_widget.dart';
-import '../Widget/edit_bill_buttom_sheet_widget.dart';
+import '../data/meal_provider.dart';
+import '../../../Widget/Page_Title_widget.dart';
+import '../../../Widget/add_payment_dialog_widget.dart';
+import '../../../Widget/appbar_widget.dart';
+import '../../../Widget/confirm_delete_dialog_widget.dart';
+import '../../../Widget/edit_bill_buttom_sheet_widget.dart';
 
 class MealSummaryScreen extends StatefulWidget {
   const MealSummaryScreen({Key? key}) : super(key: key);

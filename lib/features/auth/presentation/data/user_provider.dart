@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import '../../Data/Model/user_model.dart';
+import '../../../../Data/Model/user_model.dart';
 
 class UserProvider with ChangeNotifier {
   UserModel? _currentUser;

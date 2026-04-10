@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../Data/Model/meal_model.dart';
-import '../Provider/meal_provider.dart';
+import '../meal/presentation/data/meal_provider.dart';
 
 class AddPaymentDialog extends StatefulWidget {
   final MealProvider provider;

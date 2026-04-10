@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../Data/Model/staff_model.dart';
 import '../data/expense_provider.dart';
-import '../../../Provider/staff_provider.dart';
+import '../../../staff/presentation/data/staff_provider.dart';
 import '../../../sell/presentation/data/sell_provider.dart';
 import '../../../Widget/Page_Title_widget.dart';
 import '../../../Widget/confirm_delete_dialog_widget.dart';
@@ -41,7 +41,7 @@ class _ExpenseEntryScreenState extends State<ExpenseEntryScreen> {
     final uid = FirebaseAuth.instance.currentUser?.uid;
     if (uid != null) {
       Provider.of<ExpenseProvider>(context, listen: false).init(uid);
-      Provider.of<StaffProvider>(context, listen: false).loadStaffsFromFirestore();
+      Provider.of<StaffProvider>(context, listen: false).initialize();
       Provider.of<SellProvider>(context, listen: false).initialize();
     }
   }
@@ -208,50 +208,64 @@ class _ExpenseEntryScreenState extends State<ExpenseEntryScreen> {
                                 ElevatedButton.icon(
                                   onPressed: () async {
                                     if (_formKey.currentState!.validate()) {
-                                      double enteredAmount =
-                                      double.parse(amountController.text);
+                                      double enteredAmount = double.parse(amountController.text);
                                       String title = selectedTitle!;
 
-                                      if (title == 'Staff Salary' &&
-                                          selectedStaff != null) {
+                                      if (title == 'Staff Salary' && selectedStaff != null) {
                                         title = "Salary - ${selectedStaff!.name}";
-                                        await staffProvider.paySalary(
-                                            selectedStaff!.id, enteredAmount);
+                                        try {
+                                          await staffProvider.paySalary(
+                                            id: selectedStaff!.id,
+                                            amountPaid: enteredAmount,
+                                          );
+                                        } catch (e) {
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            SnackBar(content: Text('Salary payment failed: $e')),
+                                          );
+                                          return; // Stop execution if salary payment fails
+                                        }
                                       }
 
-                                      if (editId == null) {
-                                        await expenseProvider.addExpense(
-                                          title: title,
-                                          amount: enteredAmount,
-                                          date: selectedDate,
-                                        );
-                                      } else {
-                                        await expenseProvider.editExpense(
-                                          id: editId!,
-                                          newTitle: title,
-                                          newAmount: enteredAmount,
-                                          newDate: selectedDate,
-                                        );
-                                        editId = null;
-                                      }
+                                      try {
+                                        if (editId == null) {
+                                          await expenseProvider.addExpense(
+                                            title: title,
+                                            amount: enteredAmount,
+                                            date: selectedDate,
+                                          );
+                                          editId = null;
+                                        } else {
+                                          await expenseProvider.editExpense(
+                                            id: editId!,
+                                            newTitle: title,
+                                            newAmount: enteredAmount,
+                                            newDate: selectedDate,
+                                          );
+                                          editId = null;
+                                        }
 
-                                      setState(() {
-                                        selectedTitle = null;
-                                        selectedStaff = null;
-                                        amountController.clear();
-                                      });
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          const SnackBar(content: Text('Expense saved successfully')),
+                                        );
+
+                                        setState(() {
+                                          selectedTitle = null;
+                                          selectedStaff = null;
+                                          amountController.clear();
+                                        });
+                                      } catch (e) {
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          SnackBar(content: Text('Error saving expense: $e')),
+                                        );
+                                      }
                                     }
                                   },
-                                  icon: Icon(
-                                      editId == null ? Icons.add : Icons.check),
-                                  label: Text(editId == null
-                                      ? "Add Expense"
-                                      : "Update Expense"),
+                                  icon: Icon(editId == null ? Icons.add : Icons.check),
+                                  label: Text(editId == null ? "Add Expense" : "Update Expense"),
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: Colors.greenAccent,
                                     minimumSize: const Size(double.infinity, 50),
-                                    shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(10)),
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                                   ),
                                 ),
                               ],

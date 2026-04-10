@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
-import '../expense/presentation/data/expense_provider.dart';
-import '../sell/presentation/data/sell_provider.dart';
-import '../Widget/Page_Title_widget.dart';
-import '../Widget/appbar_widget.dart';
-import '../Widget/total_card_widget.dart';
+import '../../../expense/presentation/data/expense_provider.dart';
+import '../data/sell_provider.dart';
+import '../../../Widget/Page_Title_widget.dart';
+import '../../../Widget/appbar_widget.dart';
+import '../../../Widget/total_card_widget.dart';
 
 class NetCashSummaryScreen extends StatefulWidget {
   const NetCashSummaryScreen({super.key});

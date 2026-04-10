@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../Provider/navigation_provider.dart';
-import '../Widget/appbar_widget.dart';
-import '../expense/presentation/screens/expense_entry_screen.dart';
-import '../purchase/presentation/screens/purchase_entry_screen.dart';
-import 'meal_entry_screen.dart';
-import 'dashboard_screen.dart';
-import '../sell/presentation/screens/sell_entry_screen.dart';
+import '../../../Provider/navigation_provider.dart';
+import '../../../Widget/appbar_widget.dart';
+import '../../../expense/presentation/screens/expense_entry_screen.dart';
+import '../../../purchase/presentation/screens/purchase_entry_screen.dart';
+import '../../../meal/presentation/screens/meal_entry_screen.dart';
+import '../../../dashboard/presentation/screens/dashboard_screen.dart';
+import '../../../sell/presentation/screens/sell_entry_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});

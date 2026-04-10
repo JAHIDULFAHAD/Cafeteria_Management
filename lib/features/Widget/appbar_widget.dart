@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:provider/provider.dart';
 import '../../Data/Model/user_model.dart';
-import '../Screen/profile_screen.dart';
-import '../Screen/login_screen.dart';
-import '../Provider/user_provider.dart';
+import '../auth/presentation/screens/profile_screen.dart';
+import '../auth/presentation/screens/login_screen.dart';
+import '../auth/presentation/data/user_provider.dart';
 
 class AppbarWidget extends StatefulWidget implements PreferredSizeWidget {
   const AppbarWidget({super.key});
